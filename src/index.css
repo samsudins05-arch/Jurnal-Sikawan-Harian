@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+@page {
+  size: A4 portrait;
+  margin: 1.2cm 1.8cm 1.2cm 1.8cm; /* Top Right Bottom Left */
+}
+
+@media print {
+  /* Hide all app header, navigation, and sidebar controls */
+  header,
+  nav,
+  button,
+  #btn-shift-selector,
+  .no-print {
+    display: none !important;
+  }
+
+  body, html {
+    background-color: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #printable-journal-sheet {
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important; /* Managed by @page margins in print */
+    width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+  }
+}
