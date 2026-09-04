@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { UserProfile, SchoolSettings } from '../types/journal';
 import { downloadStaffExcelTemplate, parseStaffExcelFile } from '../utils/excelHelper';
+import { db } from '../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface ExcelStaffTableProps {
   profile: UserProfile;
@@ -48,7 +50,10 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
     if (savedList) {
       try {
         const parsed = JSON.parse(savedList);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const isLegacyDummy = parsed.length === 7 && parsed.some((p: any) => p.nip === '198506152010011025');
+          if (!isLegacyDummy) return parsed;
+        }
       } catch (e) {
         return [];
       }
@@ -129,11 +134,17 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
 
       setImportStatus({
         type: 'success',
-        message: `Berhasil mengimpor ${parsedRows.length} data Guru/Pegawai dari Excel! Data telah diterapkan dan tersimpan di Master Data Pegawai.`,
+        message: `Berhasil mengimpor ${parsedRows.length} data Guru/Pegawai dari Excel! Data telah diterapkan dan tersimpan di Data Pegawai.`,
       });
 
       // Auto trigger cloud save to ensure permanence
       onSaveToCloud();
+      try {
+        setDoc(doc(db, 'settings', 'school_master_data'), {
+          staffList: parsedRows,
+          updatedAt: serverTimestamp(),
+        }, { merge: true }).catch(() => {});
+      } catch (e) {}
 
       // Reset file input
       if (excelFileInputRef.current) {
@@ -177,12 +188,18 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
   };
 
   const handleClearTableList = () => {
-    if (window.confirm('Hapus daftar impor tabel excel ini? Data aktif di formulir tetap tersimpan.')) {
+    if (window.confirm('Hapus seluruh daftar data pegawai ini? Data aktif di formulir tetap tersimpan.')) {
       setImportedStaffList([]);
       if (setStaffList) {
         setStaffList([]);
       }
       localStorage.removeItem('sijunawan_staff_list');
+      try {
+        setDoc(doc(db, 'settings', 'school_master_data'), {
+          staffList: [],
+          updatedAt: serverTimestamp(),
+        }, { merge: true }).catch(() => {});
+      } catch (e) {}
     }
   };
 
@@ -199,6 +216,12 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
       setStaffList(updatedList);
     }
     localStorage.setItem('sijunawan_staff_list', JSON.stringify(updatedList));
+    try {
+      setDoc(doc(db, 'settings', 'school_master_data'), {
+        staffList: updatedList,
+        updatedAt: serverTimestamp(),
+      }, { merge: true }).catch(() => {});
+    } catch (e) {}
     setIsAddFormOpen(false);
     setNewStaff({
       name: '',
@@ -213,7 +236,7 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
     });
     setImportStatus({
       type: 'success',
-      message: `Guru ${newStaff.name} berhasil ditambahkan ke Master Data Pegawai!`,
+      message: `Guru ${newStaff.name} berhasil ditambahkan ke Data Pegawai!`,
     });
     onSaveToCloud();
     setTimeout(() => setImportStatus(null), 4000);
@@ -221,13 +244,19 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
 
   const handleDeleteStaffRow = (indexToDelete: number) => {
     const staff = displayRows[indexToDelete];
-    if (window.confirm(`Hapus ${staff.name || 'guru ini'} dari Tabel Master Data Pegawai?`)) {
+    if (window.confirm(`Hapus ${staff.name || 'guru ini'} dari Data Pegawai?`)) {
       const updatedList = displayRows.filter((_, idx) => idx !== indexToDelete);
       setImportedStaffList(updatedList);
       if (setStaffList) {
         setStaffList(updatedList);
       }
       localStorage.setItem('sijunawan_staff_list', JSON.stringify(updatedList));
+      try {
+        setDoc(doc(db, 'settings', 'school_master_data'), {
+          staffList: updatedList,
+          updatedAt: serverTimestamp(),
+        }, { merge: true }).catch(() => {});
+      } catch (e) {}
       setImportStatus({
         type: 'info',
         message: `Data pegawai berhasil dihapus.`,
@@ -237,26 +266,14 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
     }
   };
 
-  // Compile rows to display: either staffList / imported list or current profile
+  // Compile rows to display: ONLY staffList / imported list from Excel (default empty)
   const displayRows = (staffList && staffList.length > 0)
     ? staffList
     : importedStaffList.length > 0 
     ? importedStaffList 
-    : [
-        {
-          name: profile.name,
-          nip: profile.nip,
-          position: profile.position,
-          unitWork: profile.unitWork,
-          rankGrade: profile.rankGrade,
-          employeeStatus: profile.employeeStatus,
-          schoolHeadName: profile.schoolHeadName,
-          schoolHeadNip: profile.schoolHeadNip,
-          cityLocation: profile.cityLocation,
-        }
-      ];
+    : [];
 
-  const hasAnyData = profile.name || profile.nip || profile.schoolHeadName || displayRows.length > 0;
+  const hasAnyData = displayRows.length > 0;
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
@@ -268,7 +285,7 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
           </div>
           <div>
             <h3 className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
-              <span>Format Excel &amp; Tabel Master Data Pegawai / Pejabat</span>
+              <span>Data Pegawai</span>
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                 Excel (.xlsx, .csv)
               </span>
@@ -360,7 +377,7 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
         <div className="flex items-center justify-between text-xs text-slate-600 font-semibold px-1">
           <span className="flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-slate-500" />
-            <span>Tabel Master Data Pegawai &amp; Pejabat Penandatangan ({displayRows.length} Baris Data)</span>
+            <span>Tabel Data Pegawai &amp; Pejabat Penandatangan ({displayRows.length} Baris Data)</span>
           </span>
           {importedStaffList.length > 0 && (
             <button
