@@ -1,6 +1,6 @@
 {
   "name": "Informasi Jurnal Sikawan Harian",
-  "description": "Aplikasi Jurnal Kerja Harian Guru dan Pegawai Sikawan dengan sinkronisasi real-time Firebase, ekspor PDF A4 otomatis, dan rekap bulanan untuk Android, iOS, dan Web.",
+  "description": "Aplikasi Jurnal Kerja Harian Guru dan Pegawai Sikawan dengan sinkronisasi real-time Firebase, ekspor PDF F4 (210x330 mm) otomatis, dan rekap bulanan untuk Android, iOS, dan Web.",
   "requestFramePermissions": ["camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

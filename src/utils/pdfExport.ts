@@ -36,12 +36,12 @@ export async function renderElementToJsPdf(
           clonedElement.style.margin = '0 auto';
           clonedElement.style.boxShadow = 'none';
           clonedElement.style.paddingTop = '1.2cm';
-          clonedElement.style.paddingRight = '1.8cm';
+          clonedElement.style.paddingRight = '1.5cm';
           clonedElement.style.paddingBottom = '1.2cm';
-          clonedElement.style.paddingLeft = '1.8cm';
+          clonedElement.style.paddingLeft = '1.5cm';
           clonedElement.style.boxSizing = 'border-box';
           clonedElement.style.width = '210mm';
-          clonedElement.style.minHeight = '297mm';
+          clonedElement.style.minHeight = '330mm';
         }
       },
     });
@@ -60,34 +60,43 @@ export async function renderElementToJsPdf(
 
   const imgData = canvas.toDataURL('image/jpeg', 0.95);
   
-  // A4 dimensions in mm (210 x 297)
+  // F4 (Folio) dimensions in mm (210 x 330)
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4',
+    format: [210, 330],
   });
 
-  const pdfWidth = pdf.internal.pageSize.getWidth() || 210; // 210mm
-  const pdfHeight = pdf.internal.pageSize.getHeight() || 297; // 297mm
+  const pdfWidth = 210; // 210mm
+  const pdfHeight = 330; // 330mm
 
   const cWidth = canvas.width || 1;
   const cHeight = canvas.height || 1;
-  const imgWidth = Number(pdfWidth.toFixed(2));
-  const imgHeight = Number(((cHeight * pdfWidth) / cWidth).toFixed(2));
+  let imgWidth = Number(pdfWidth.toFixed(2));
+  let imgHeight = Number(((cHeight * pdfWidth) / cWidth).toFixed(2));
 
-  let heightLeft = imgHeight;
-  let position = 0;
+  // Fit to 1 page F4 (210 x 330 mm) if content is close to 1 page, preventing bottom overflow
+  if (imgHeight > pdfHeight && imgHeight <= pdfHeight * 1.12) {
+    const scaleRatio = pdfHeight / imgHeight;
+    imgWidth = Number((imgWidth * scaleRatio).toFixed(2));
+    imgHeight = Number(pdfHeight.toFixed(2));
+    const xOffset = Number(((pdfWidth - imgWidth) / 2).toFixed(2));
+    pdf.addImage(imgData, 'JPEG', xOffset, 0, imgWidth, imgHeight);
+  } else {
+    let heightLeft = imgHeight;
+    let position = 0;
 
-  // Add first page with valid numeric arguments only
-  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-  heightLeft -= pdfHeight;
-
-  // Add subsequent pages if document content extends beyond 1 page
-  while (heightLeft > 2) {
-    position = position - pdfHeight;
-    pdf.addPage();
+    // Add first page
     pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
     heightLeft -= pdfHeight;
+
+    // Add subsequent pages if document content extends beyond 1 page
+    while (heightLeft > 5) {
+      position = position - pdfHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+    }
   }
 
   const pdfBlob = pdf.output('blob');

@@ -12,6 +12,7 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
   schoolHeadName: '',
   schoolHeadNip: '',
   schoolHeadSignatureUrl: '',
+  schoolStampUrl: '',
   cityLocation: 'Bekasi',
 };
 
@@ -24,7 +25,88 @@ export const DEFAULT_SCHOOL_SETTINGS: SchoolSettings = {
   customKopImage: '',
   customLogoLeft: '',
   customLogoRight: '',
+  schoolStampUrl: '',
 };
+
+export const DEFAULT_STAFF_LIST: Partial<UserProfile>[] = [
+  {
+    name: 'SAMSUDIN, S.Pd',
+    nip: '198506152010011025',
+    position: 'Guru Kelas',
+    unitWork: 'SDN BABELAN KOTA 01',
+    rankGrade: 'Penata / III/c',
+    employeeStatus: 'PNS',
+    schoolHeadName: 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: '197501012000031005',
+    cityLocation: 'Bekasi',
+  },
+  {
+    name: 'SITI NURJANAH, S.Pd.I',
+    nip: '198903142019022011',
+    position: 'Guru PAI',
+    unitWork: 'SDN BABELAN KOTA 01',
+    rankGrade: 'Penata Muda / III/a',
+    employeeStatus: 'PPPK',
+    schoolHeadName: 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: '197501012000031005',
+    cityLocation: 'Bekasi',
+  },
+  {
+    name: 'H. AHMAD FAUZI, S.Pd',
+    nip: '198207182009011007',
+    position: 'Guru PJOK',
+    unitWork: 'SDN BABELAN KOTA 01',
+    rankGrade: 'Penata Tk.I / III/d',
+    employeeStatus: 'PNS',
+    schoolHeadName: 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: '197501012000031005',
+    cityLocation: 'Bekasi',
+  },
+  {
+    name: 'DEWI ANGGRAENI, S.Pd',
+    nip: '199405222022212015',
+    position: 'Guru Kelas',
+    unitWork: 'SDN BABELAN KOTA 01',
+    rankGrade: 'Penata Muda / III/a',
+    employeeStatus: 'PPPK',
+    schoolHeadName: 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: '197501012000031005',
+    cityLocation: 'Bekasi',
+  },
+  {
+    name: 'RUDI HARTONO, S.Pd',
+    nip: '199112052023211009',
+    position: 'Guru PJOK',
+    unitWork: 'SDN BABELAN KOTA 01',
+    rankGrade: 'Penata Muda / III/a',
+    employeeStatus: 'PPPK',
+    schoolHeadName: 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: '197501012000031005',
+    cityLocation: 'Bekasi',
+  },
+  {
+    name: 'BAMBANG HERMANTO, S.Pd',
+    nip: '-',
+    position: 'Guru Bahasa Inggris',
+    unitWork: 'SDN BABELAN KOTA 01',
+    rankGrade: '-',
+    employeeStatus: 'Guru Honorer',
+    schoolHeadName: 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: '197501012000031005',
+    cityLocation: 'Bekasi',
+  },
+  {
+    name: 'NUR AINI, S.Pd',
+    nip: '199608102024212018',
+    position: 'Guru Kelas',
+    unitWork: 'SDN BABELAN KOTA 01',
+    rankGrade: 'Penata Muda / III/a',
+    employeeStatus: 'PPPK',
+    schoolHeadName: 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: '197501012000031005',
+    cityLocation: 'Bekasi',
+  }
+];
 
 export const DEFAULT_SHIFTS: ShiftConfig[] = [
   {

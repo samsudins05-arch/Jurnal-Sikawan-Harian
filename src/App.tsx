@@ -32,7 +32,8 @@ import {
   DEFAULT_USER_PROFILE, 
   DEFAULT_SCHOOL_SETTINGS, 
   DEFAULT_SHIFTS, 
-  INITIAL_ACTIVITIES 
+  INITIAL_ACTIVITIES,
+  DEFAULT_STAFF_LIST
 } from './data/initialData';
 import { parseDateStrToIndonesian } from './utils/dateFormat';
 import { exportElementToPdf } from './utils/pdfExport';
@@ -92,8 +93,48 @@ export default function App() {
     return saved ? JSON.parse(saved) : DEFAULT_SCHOOL_SETTINGS;
   });
 
+  // Master Data Staff List (synchronizes with ExcelStaffTable & MonthlyRecap)
+  const [staffList, setStaffList] = useState<Partial<UserProfile>[]>(() => {
+    const saved = localStorage.getItem('sijunawan_staff_list');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return DEFAULT_STAFF_LIST;
+  });
+
+  const handleSelectStaff = (staff: Partial<UserProfile>) => {
+    setProfile((prev) => {
+      const updated: UserProfile = {
+        ...prev,
+        name: staff.name ?? prev.name,
+        nip: staff.nip ?? prev.nip,
+        position: staff.position ?? prev.position,
+        unitWork: staff.unitWork ?? prev.unitWork,
+        rankGrade: staff.rankGrade ?? prev.rankGrade,
+        employeeStatus: staff.employeeStatus ?? prev.employeeStatus,
+        schoolHeadName: staff.schoolHeadName ?? prev.schoolHeadName,
+        schoolHeadNip: staff.schoolHeadNip ?? prev.schoolHeadNip,
+        cityLocation: staff.cityLocation ?? prev.cityLocation,
+      };
+      localStorage.setItem('sijunawan_profile', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   // All Journals List for Monthly Recap & History
-  const [allJournals, setAllJournals] = useState<JournalDay[]>([]);
+  const [allJournals, setAllJournals] = useState<JournalDay[]>(() => {
+    const saved = localStorage.getItem('sijunawan_local_journals');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    return [];
+  });
 
   // Sync & Export status
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
@@ -241,31 +282,94 @@ export default function App() {
     });
   }, [selectedDate, currentUser]);
 
-  // 5. Debounced Real-time Save of Current Day's Journal to Firestore
+  // 5. Debounced Real-time Save of Current Day's Journal to Firestore & Local Storage
   const saveCurrentJournalToCloud = useCallback(async () => {
-    if (!currentUser || !selectedDate) return;
+    if (!selectedDate) return;
 
     setSyncStatus('syncing');
-    try {
-      const docId = `${currentUser.uid}_${selectedDate}`;
-      const journalDocRef = doc(db, 'journals', docId);
+    const teacherSlug = (profile.nip || profile.name || 'guru').trim().replace(/[^a-zA-Z0-9]/g, '_');
+    const docId = currentUser ? `${currentUser.uid}_${selectedDate}_${teacherSlug}` : `local_${selectedDate}_${teacherSlug}`;
 
-      const payload: JournalDay = {
-        userId: currentUser.uid,
-        dateStr: selectedDate,
-        formattedDate: parseDateStrToIndonesian(selectedDate),
-        shift: currentShift,
-        activities: activities,
-        updatedAt: Date.now(),
-      };
+    const validActivities = activities.filter(
+      (a) => a.activity && a.activity.trim() !== '' && a.activity.trim() !== '-'
+    );
 
-      await setDoc(journalDocRef, payload, { merge: true });
-      setSyncStatus('synced');
-    } catch (err) {
-      console.error('Error syncing journal to Firebase:', err);
-      setSyncStatus('offline');
+    // Look up if this journal already has isPdfSaved set to true
+    let wasPdfSaved = false;
+    let existingPdfSavedAt: number | undefined = undefined;
+    const existing = allJournals.find(
+      (j) =>
+        j.dateStr === selectedDate &&
+        ((j.teacherNip && profile.nip && j.teacherNip === profile.nip) ||
+          (j.teacherName && profile.name && j.teacherName === profile.name) ||
+          (!j.teacherNip && !j.teacherName))
+    );
+
+    if (existing && validActivities.length > 0) {
+      wasPdfSaved = Boolean(existing.isPdfSaved);
+      existingPdfSavedAt = existing.pdfSavedAt;
     }
-  }, [currentUser, selectedDate, currentShift, activities]);
+
+    const payload: JournalDay = {
+      userId: currentUser ? currentUser.uid : 'local_user',
+      dateStr: selectedDate,
+      formattedDate: parseDateStrToIndonesian(selectedDate),
+      shift: currentShift,
+      activities: activities,
+      teacherName: profile.name,
+      teacherNip: profile.nip,
+      isPdfSaved: wasPdfSaved,
+      pdfSavedAt: existingPdfSavedAt,
+      profileSnapshot: {
+        name: profile.name,
+        nip: profile.nip,
+        position: profile.position,
+        unitWork: profile.unitWork,
+        rankGrade: profile.rankGrade,
+        employeeStatus: profile.employeeStatus,
+      },
+      updatedAt: Date.now(),
+    };
+
+    // Update local state and localStorage immediately
+    setAllJournals((prev) => {
+      const entry: JournalDay = { id: docId, ...payload };
+      const idx = prev.findIndex(
+        (j) =>
+          j.dateStr === selectedDate &&
+          ((j.teacherNip && profile.nip && j.teacherNip === profile.nip) ||
+            (j.teacherName && profile.name && j.teacherName === profile.name) ||
+            (!j.teacherNip && !j.teacherName))
+      );
+      let updated: JournalDay[];
+      if (idx >= 0) {
+        updated = [...prev];
+        updated[idx] = entry;
+      } else {
+        updated = [entry, ...prev];
+      }
+      localStorage.setItem('sijunawan_local_journals', JSON.stringify(updated));
+      return updated;
+    });
+
+    if (currentUser) {
+      try {
+        const journalDocRef = doc(db, 'journals', docId);
+        await setDoc(journalDocRef, payload, { merge: true });
+
+        // Also keep legacy single doc updated for compatibility
+        const legacyDocRef = doc(db, 'journals', `${currentUser.uid}_${selectedDate}`);
+        await setDoc(legacyDocRef, payload, { merge: true });
+
+        setSyncStatus('synced');
+      } catch (err) {
+        console.error('Error syncing journal to Firebase:', err);
+        setSyncStatus('offline');
+      }
+    } else {
+      setSyncStatus('synced');
+    }
+  }, [currentUser, selectedDate, currentShift, activities, profile.name, profile.nip, allJournals]);
 
   // Trigger auto-save debounce on activity or shift change
   useEffect(() => {
@@ -288,31 +392,34 @@ export default function App() {
     };
   }, [activities, currentShift, selectedDate, saveCurrentJournalToCloud]);
 
-  // Save Settings (Profile & Kop Surat) to Cloud
+  // Save Settings (Profile & Kop Surat & Master Data Staff) to Cloud
   const handleSaveSettingsToCloud = async () => {
-    if (!currentUser) return;
     setIsSavingSettings(true);
     try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      await setDoc(userDocRef, {
-        profile,
-        schoolSettings,
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await setDoc(userDocRef, {
+          profile,
+          schoolSettings,
+          staffList,
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      }
 
       localStorage.setItem('sijunawan_profile', JSON.stringify(profile));
       localStorage.setItem('sijunawan_school', JSON.stringify(schoolSettings));
+      localStorage.setItem('sijunawan_staff_list', JSON.stringify(staffList));
       setIsSavingSettings(false);
       showNotification(
         'SIMPAN BERHASIL',
-        'Data Pengaturan, Kop Sekolah & Tanda Tangan berhasil disimpan ke Perangkat & Cloud!',
+        'Data Profil, Kop Sekolah & Master Data Pegawai berhasil disimpan!',
         'success'
       );
     } catch (err: any) {
       console.error('Error saving settings:', err);
-      // Even if offline, save locally
       localStorage.setItem('sijunawan_profile', JSON.stringify(profile));
       localStorage.setItem('sijunawan_school', JSON.stringify(schoolSettings));
+      localStorage.setItem('sijunawan_staff_list', JSON.stringify(staffList));
       setIsSavingSettings(false);
       showNotification(
         'SIMPAN BERHASIL (LOKAL)',
@@ -324,10 +431,16 @@ export default function App() {
 
   // Delete a journal entry
   const handleDeleteJournal = async (journalId: string, dateStr: string) => {
-    if (!currentUser) return;
     try {
-      const docId = `${currentUser.uid}_${dateStr}`;
-      await deleteDoc(doc(db, 'journals', docId));
+      if (currentUser) {
+        const docId = journalId || `${currentUser.uid}_${dateStr}`;
+        await deleteDoc(doc(db, 'journals', docId));
+      }
+      setAllJournals((prev) => {
+        const updated = prev.filter((j) => (j.id ? j.id !== journalId : j.dateStr !== dateStr));
+        localStorage.setItem('sijunawan_local_journals', JSON.stringify(updated));
+        return updated;
+      });
       if (selectedDate === dateStr) {
         setActivities([]);
       }
@@ -337,11 +450,100 @@ export default function App() {
     }
   };
 
-  // Export A4 PDF action - Opens interactive Save PDF Dialog Modal
-  const handleExportPdf = () => {
+  // Helper: Persist and mark current journal as isPdfSaved = true
+  const handleConfirmPdfSaved = async () => {
+    const validActivities = activities.filter(
+      (a) => a.activity && a.activity.trim() !== '' && a.activity.trim() !== '-'
+    );
+    if (validActivities.length === 0) return;
+
+    const teacherSlug = (profile.nip || profile.name || 'guru').trim().replace(/[^a-zA-Z0-9]/g, '_');
+    const docId = currentUser ? `${currentUser.uid}_${selectedDate}_${teacherSlug}` : `local_${selectedDate}_${teacherSlug}`;
+
+    const updatedJournalPayload: JournalDay = {
+      userId: currentUser ? currentUser.uid : 'local_user',
+      dateStr: selectedDate,
+      formattedDate: parseDateStrToIndonesian(selectedDate),
+      shift: currentShift,
+      activities: activities,
+      teacherName: profile.name,
+      teacherNip: profile.nip,
+      isPdfSaved: true,
+      pdfSavedAt: Date.now(),
+      profileSnapshot: {
+        name: profile.name,
+        nip: profile.nip,
+        position: profile.position,
+        unitWork: profile.unitWork,
+        rankGrade: profile.rankGrade,
+        employeeStatus: profile.employeeStatus,
+      },
+      updatedAt: Date.now(),
+    };
+
+    setAllJournals((prev) => {
+      const entry: JournalDay = { id: docId, ...updatedJournalPayload };
+      const idx = prev.findIndex(
+        (j) =>
+          j.dateStr === selectedDate &&
+          ((j.teacherNip && profile.nip && j.teacherNip === profile.nip) ||
+            (j.teacherName && profile.name && j.teacherName === profile.name) ||
+            (!j.teacherNip && !j.teacherName))
+      );
+      let updated: JournalDay[];
+      if (idx >= 0) {
+        updated = [...prev];
+        updated[idx] = entry;
+      } else {
+        updated = [entry, ...prev];
+      }
+      localStorage.setItem('sijunawan_local_journals', JSON.stringify(updated));
+      return updated;
+    });
+
+    if (currentUser) {
+      try {
+        const journalDocRef = doc(db, 'journals', docId);
+        await setDoc(journalDocRef, updatedJournalPayload, { merge: true });
+        const legacyDocRef = doc(db, 'journals', `${currentUser.uid}_${selectedDate}`);
+        await setDoc(legacyDocRef, updatedJournalPayload, { merge: true });
+      } catch (err) {
+        console.warn('Firestore sync error:', err);
+      }
+    }
+  };
+
+  // Export F4 PDF action - Verifies activities and updates isPdfSaved status
+  const handleExportPdf = async () => {
     if (activeTab !== 'jurnal') {
       setActiveTab('jurnal');
     }
+
+    const validActivities = activities.filter(
+      (a) => a.activity && a.activity.trim() !== '' && a.activity.trim() !== '-'
+    );
+
+    if (validActivities.length === 0) {
+      // Guru belum mengisi jurnal: kotak tidak berubah warna (tetap merah muda)
+      showNotification(
+        'Jurnal Belum Diisi',
+        'Kegiatan jurnal harian masih kosong. Kotak pada Matriks Rekapitulasi tetap berwarna merah muda (tidak berubah hijau).',
+        'error'
+      );
+      setIsSavePdfModalOpen(true);
+      return;
+    }
+
+    // Guru telah mengisi jurnal dan mengklik tombol Simpan PDF:
+    // Kotak pada Matrik akan berubah berwarna HIJAU!
+    await handleConfirmPdfSaved();
+
+    showNotification(
+      'SIMPAN PDF BERHASIL',
+      `Jurnal tanggal ${parseDateStrToIndonesian(selectedDate)} tersimpan. Kotak pada Matriks Rekapitulasi kini BERUBAH MENJADI HIJAU.`,
+      'success'
+    );
+
     setIsSavePdfModalOpen(true);
   };
 
@@ -423,6 +625,25 @@ export default function App() {
                 schoolSettings={schoolSettings}
                 onExportPdf={handleExportPdf}
                 isExporting={isExportingPdf}
+                onUploadStamp={(b64) => {
+                  setSchoolSettings((prev) => {
+                    const updated = { ...prev, schoolStampUrl: b64 };
+                    localStorage.setItem('sijunawan_school', JSON.stringify(updated));
+                    return updated;
+                  });
+                  setProfile((prev) => {
+                    const updated = { ...prev, schoolStampUrl: b64 };
+                    localStorage.setItem('sijunawan_profile', JSON.stringify(updated));
+                    return updated;
+                  });
+                  setToastMessage({
+                    show: true,
+                    title: 'Stempel Sekolah Berhasil Dipasang',
+                    message: 'Stempel otomatis menempel di sebelah kiri Kepala Sekolah.',
+                    type: 'success',
+                  });
+                }}
+                onNavigateToSettings={() => setActiveTab('pengaturan')}
               />
             </div>
           </div>
@@ -432,11 +653,16 @@ export default function App() {
         {activeTab === 'rekap' && (
           <MonthlyRecap
             journals={allJournals}
-            onSelectDateToEdit={(dateStr) => {
+            staffList={staffList}
+            onSelectDateToEdit={(dateStr, teacher) => {
+              if (teacher) {
+                handleSelectStaff(teacher);
+              }
               setSelectedDate(dateStr);
               setActiveTab('jurnal');
               setActiveViewMobile('form');
             }}
+            onOpenMasterData={() => setActiveTab('pengaturan')}
             onDeleteJournal={handleDeleteJournal}
             profile={profile}
             schoolSettings={schoolSettings}
@@ -450,6 +676,8 @@ export default function App() {
             setProfile={setProfile}
             schoolSettings={schoolSettings}
             setSchoolSettings={setSchoolSettings}
+            staffList={staffList}
+            setStaffList={setStaffList}
             onSaveToCloud={handleSaveSettingsToCloud}
             isSaving={isSavingSettings}
             onResetDefaults={handleResetDefaults}
@@ -528,6 +756,7 @@ export default function App() {
         activities={activities}
         profile={profile}
         onSuccessNotification={showNotification}
+        onPdfSavedSuccess={handleConfirmPdfSaved}
       />
     </div>
   );

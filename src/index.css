@@ -7,8 +7,8 @@
 }
 
 @page {
-  size: A4 portrait;
-  margin: 1.2cm 1.8cm 1.2cm 1.8cm; /* Top Right Bottom Left */
+  size: 210mm 330mm;
+  margin: 1.2cm 1.5cm 1.2cm 1.5cm; /* Top Right Bottom Left */
 }
 
 @media print {
@@ -25,12 +25,22 @@
     background-color: #ffffff !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 210mm !important;
   }
 
   main {
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Reset outer container margins in print so no extra space is added */
+  #printable-journal-sheet-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
   }
 
   #printable-journal-sheet {
@@ -39,7 +49,12 @@
     border: none !important;
     padding: 0 !important; /* Managed by @page margins in print */
     width: 100% !important;
+    max-width: 100% !important;
     min-height: auto !important;
     margin: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 }

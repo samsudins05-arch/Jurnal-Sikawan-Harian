@@ -9,7 +9,9 @@ import {
   Users, 
   Sparkles,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  UserPlus,
+  Plus
 } from 'lucide-react';
 import { UserProfile, SchoolSettings } from '../types/journal';
 import { downloadStaffExcelTemplate, parseStaffExcelFile } from '../utils/excelHelper';
@@ -18,6 +20,8 @@ interface ExcelStaffTableProps {
   profile: UserProfile;
   setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
   schoolSettings: SchoolSettings;
+  staffList?: Partial<UserProfile>[];
+  setStaffList?: React.Dispatch<React.SetStateAction<Partial<UserProfile>[]>>;
   onSaveToCloud: () => Promise<void>;
   isSaving: boolean;
 }
@@ -26,6 +30,8 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
   profile,
   setProfile,
   schoolSettings,
+  staffList,
+  setStaffList,
   onSaveToCloud,
   isSaving,
 }) => {
@@ -37,15 +43,30 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
 
   // List of imported staff rows from Excel if multi-row spreadsheet
   const [importedStaffList, setImportedStaffList] = useState<Partial<UserProfile>[]>(() => {
+    if (staffList && staffList.length > 0) return staffList;
     const savedList = localStorage.getItem('sijunawan_staff_list');
     if (savedList) {
       try {
-        return JSON.parse(savedList);
+        const parsed = JSON.parse(savedList);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {
         return [];
       }
     }
     return [];
+  });
+
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [newStaff, setNewStaff] = useState<Partial<UserProfile>>({
+    name: '',
+    nip: '',
+    position: 'Guru Kelas',
+    unitWork: schoolSettings.subUnitName || 'SDN Babelan Kota 01',
+    rankGrade: 'Penata Muda / III/a',
+    employeeStatus: 'PNS',
+    schoolHeadName: profile.schoolHeadName || 'NAMA KEPALA SEKOLAH, M.Pd',
+    schoolHeadNip: profile.schoolHeadNip || '197501012000031005',
+    cityLocation: profile.cityLocation || 'Bekasi',
   });
 
   const handleDownloadTemplate = () => {
@@ -81,6 +102,9 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
 
       // Save the parsed staff list
       setImportedStaffList(parsedRows);
+      if (setStaffList) {
+        setStaffList(parsedRows);
+      }
       localStorage.setItem('sijunawan_staff_list', JSON.stringify(parsedRows));
 
       // Apply first row immediately as active profile
@@ -105,7 +129,7 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
 
       setImportStatus({
         type: 'success',
-        message: `Berhasil mengimpor ${parsedRows.length} data dari Excel! Data telah diterapkan dan tersimpan permanen.`,
+        message: `Berhasil mengimpor ${parsedRows.length} data Guru/Pegawai dari Excel! Data telah diterapkan dan tersimpan di Master Data Pegawai.`,
       });
 
       // Auto trigger cloud save to ensure permanence
@@ -155,12 +179,68 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
   const handleClearTableList = () => {
     if (window.confirm('Hapus daftar impor tabel excel ini? Data aktif di formulir tetap tersimpan.')) {
       setImportedStaffList([]);
+      if (setStaffList) {
+        setStaffList([]);
+      }
       localStorage.removeItem('sijunawan_staff_list');
     }
   };
 
-  // Compile rows to display: either imported list or current profile
-  const displayRows = importedStaffList.length > 0 
+  const handleAddManualStaff = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStaff.name?.trim()) {
+      alert('Mohon masukkan Nama Guru / Pegawai');
+      return;
+    }
+
+    const updatedList = [...displayRows, newStaff];
+    setImportedStaffList(updatedList);
+    if (setStaffList) {
+      setStaffList(updatedList);
+    }
+    localStorage.setItem('sijunawan_staff_list', JSON.stringify(updatedList));
+    setIsAddFormOpen(false);
+    setNewStaff({
+      name: '',
+      nip: '',
+      position: 'Guru Kelas',
+      unitWork: schoolSettings.subUnitName || 'SDN Babelan Kota 01',
+      rankGrade: 'Penata Muda / III/a',
+      employeeStatus: 'PNS',
+      schoolHeadName: profile.schoolHeadName || 'NAMA KEPALA SEKOLAH, M.Pd',
+      schoolHeadNip: profile.schoolHeadNip || '197501012000031005',
+      cityLocation: profile.cityLocation || 'Bekasi',
+    });
+    setImportStatus({
+      type: 'success',
+      message: `Guru ${newStaff.name} berhasil ditambahkan ke Master Data Pegawai!`,
+    });
+    onSaveToCloud();
+    setTimeout(() => setImportStatus(null), 4000);
+  };
+
+  const handleDeleteStaffRow = (indexToDelete: number) => {
+    const staff = displayRows[indexToDelete];
+    if (window.confirm(`Hapus ${staff.name || 'guru ini'} dari Tabel Master Data Pegawai?`)) {
+      const updatedList = displayRows.filter((_, idx) => idx !== indexToDelete);
+      setImportedStaffList(updatedList);
+      if (setStaffList) {
+        setStaffList(updatedList);
+      }
+      localStorage.setItem('sijunawan_staff_list', JSON.stringify(updatedList));
+      setImportStatus({
+        type: 'info',
+        message: `Data pegawai berhasil dihapus.`,
+      });
+      onSaveToCloud();
+      setTimeout(() => setImportStatus(null), 3000);
+    }
+  };
+
+  // Compile rows to display: either staffList / imported list or current profile
+  const displayRows = (staffList && staffList.length > 0)
+    ? staffList
+    : importedStaffList.length > 0 
     ? importedStaffList 
     : [
         {
@@ -176,7 +256,7 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
         }
       ];
 
-  const hasAnyData = profile.name || profile.nip || profile.schoolHeadName || importedStaffList.length > 0;
+  const hasAnyData = profile.name || profile.nip || profile.schoolHeadName || displayRows.length > 0;
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
@@ -201,6 +281,17 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
 
         {/* Action Buttons Toolbar */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Add Manual Teacher Button */}
+          <button
+            type="button"
+            onClick={() => setIsAddFormOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-xs transition-colors cursor-pointer"
+            title="Tambah data guru/pegawai secara manual ke Master Data"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>+ Tambah Guru</span>
+          </button>
+
           {/* Download Template */}
           <button
             type="button"
@@ -350,20 +441,33 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
                       {row.cityLocation || 'Bekasi'}
                     </td>
                     <td className="py-2.5 px-3 text-center">
-                      {isActive ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
-                          <Check className="w-3 h-3" />
-                          <span>Sedang Aktif</span>
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleSelectStaffRow(row)}
-                          className="px-2.5 py-1 bg-white hover:bg-blue-600 hover:text-white text-blue-600 border border-blue-400 rounded-md text-[11px] font-semibold transition-all cursor-pointer shadow-2xs"
-                        >
-                          Gunakan Data
-                        </button>
-                      )}
+                      <div className="flex items-center justify-center gap-1.5">
+                        {isActive ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
+                            <Check className="w-3 h-3" />
+                            <span>Sedang Aktif</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectStaffRow(row)}
+                            className="px-2 py-1 bg-white hover:bg-blue-600 hover:text-white text-blue-600 border border-blue-400 rounded-md text-[11px] font-semibold transition-all cursor-pointer shadow-2xs"
+                            title="Aktifkan data pegawai ini"
+                          >
+                            Pilih
+                          </button>
+                        )}
+                        {displayRows.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteStaffRow(idx)}
+                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                            title="Hapus baris pegawai ini"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -390,6 +494,124 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Modal Tambah Guru Manual */}
+      {isAddFormOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <h4 className="font-bold text-slate-800 text-sm sm:text-base">
+                  Tambah Guru / Pegawai ke Master Data
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddFormOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddManualStaff} className="p-4 sm:p-5 space-y-3.5 text-xs">
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">
+                  Nama Lengkap Guru / Pegawai <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: SAMSUDIN, S.Pd"
+                  value={newStaff.name || ''}
+                  onChange={(e) => setNewStaff((prev) => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">NIP Pegawai</label>
+                  <input
+                    type="text"
+                    placeholder="198506152010011025 atau -"
+                    value={newStaff.nip || ''}
+                    onChange={(e) => setNewStaff((prev) => ({ ...prev, nip: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Jabatan</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Guru Kelas V"
+                    value={newStaff.position || ''}
+                    onChange={(e) => setNewStaff((prev) => ({ ...prev, position: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Pangkat / Golongan</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Penata / III/c"
+                    value={newStaff.rankGrade || ''}
+                    onChange={(e) => setNewStaff((prev) => ({ ...prev, rankGrade: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-slate-700 block mb-1">Status Kepegawaian</label>
+                  <select
+                    value={newStaff.employeeStatus || 'PNS'}
+                    onChange={(e) => setNewStaff((prev) => ({ ...prev, employeeStatus: e.target.value }))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+                  >
+                    <option value="PNS">PNS</option>
+                    <option value="PPPK">PPPK</option>
+                    <option value="Guru Honorer">Guru Honorer</option>
+                    <option value="Tenaga Honorer">Tenaga Honorer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Unit Kerja / Sekolah</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: SDN Babelan Kota 01"
+                  value={newStaff.unitWork || ''}
+                  onChange={(e) => setNewStaff((prev) => ({ ...prev, unitWork: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddFormOpen(false)}
+                  className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-100 font-semibold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Simpan Guru ke Master Data</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

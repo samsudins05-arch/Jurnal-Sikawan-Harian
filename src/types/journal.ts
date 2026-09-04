@@ -21,6 +21,7 @@ export interface UserProfile {
   schoolHeadName: string; // Nama Kepala Sekolah
   schoolHeadNip: string; // NIP Kepala Sekolah
   schoolHeadSignatureUrl?: string; // Tanda Tangan Kepala Sekolah (PNG/JPG)
+  schoolStampUrl?: string; // Stempel Resmi Sekolah (PNG/JPG transparan)
   cityLocation: string; // Lokasi TTD, e.g. "Bekasi"
 }
 
@@ -39,6 +40,10 @@ export interface JournalDay {
   shift: string;
   activities: ActivityItem[];
   profileSnapshot?: Partial<UserProfile>;
+  teacherName?: string;
+  teacherNip?: string;
+  isPdfSaved?: boolean; // True only if teacher has filled journal AND clicked Simpan PDF
+  pdfSavedAt?: number;
   updatedAt?: number;
 }
 
@@ -51,6 +56,7 @@ export interface SchoolSettings {
   customKopImage?: string; // full header banner image
   customLogoLeft?: string;
   customLogoRight?: string;
+  schoolStampUrl?: string; // Stempel Sekolah resmi
 }
 
 export type ActiveTab = 'jurnal' | 'rekap' | 'pengaturan';

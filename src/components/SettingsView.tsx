@@ -13,7 +13,8 @@ import {
   FileUp,
   Image as ImageIcon,
   CheckCircle2,
-  Check
+  Check,
+  Stamp
 } from 'lucide-react';
 import { UserProfile, SchoolSettings } from '../types/journal';
 import { ExcelStaffTable } from './ExcelStaffTable';
@@ -23,6 +24,8 @@ interface SettingsViewProps {
   setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
   schoolSettings: SchoolSettings;
   setSchoolSettings: React.Dispatch<React.SetStateAction<SchoolSettings>>;
+  staffList?: Partial<UserProfile>[];
+  setStaffList?: React.Dispatch<React.SetStateAction<Partial<UserProfile>[]>>;
   onSaveToCloud: () => Promise<void>;
   isSaving: boolean;
   onResetDefaults: () => void;
@@ -33,6 +36,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   setProfile,
   schoolSettings,
   setSchoolSettings,
+  staffList,
+  setStaffList,
   onSaveToCloud,
   isSaving,
   onResetDefaults,
@@ -41,6 +46,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const employeeSigInputRef = useRef<HTMLInputElement | null>(null);
   const schoolHeadSigInputRef = useRef<HTMLInputElement | null>(null);
+  const schoolStampInputRef = useRef<HTMLInputElement | null>(null);
   const kopImageInputRef = useRef<HTMLInputElement | null>(null);
   const logoLeftRef = useRef<HTMLInputElement | null>(null);
   const logoRightRef = useRef<HTMLInputElement | null>(null);
@@ -215,6 +221,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         profile={profile}
         setProfile={setProfile}
         schoolSettings={schoolSettings}
+        staffList={staffList}
+        setStaffList={setStaffList}
         onSaveToCloud={onSaveToCloud}
         isSaving={isSaving}
       />
@@ -245,7 +253,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             <div className="space-y-1.5 flex-1">
               <span className="text-xs font-semibold text-slate-700 block">Foto Pegawai</span>
-              <p className="text-[11px] text-slate-500">Akan tampil di kotak foto lembar jurnal A4.</p>
+              <p className="text-[11px] text-slate-500">Akan tampil di kotak foto lembar jurnal F4.</p>
               
               <input
                 type="file"
@@ -525,6 +533,85 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                           onClick={() => handleProfileChange('schoolHeadSignatureUrl', '')}
                           className="p-1 text-slate-400 hover:text-rose-600 rounded cursor-pointer"
                           title="Hapus Tanda Tangan"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Stempel Sekolah */}
+              <div className="pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                    <Stamp className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Stempel Sekolah (Cap Resmi Lembaga)</span>
+                  </label>
+                  <span className="text-[10px] text-purple-700 bg-purple-50 font-medium px-2 py-0.5 rounded-full border border-purple-200">
+                    Menempel di Kiri Kepala Sekolah
+                  </span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={schoolStampInputRef}
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleImageUpload(
+                        e.target.files[0],
+                        (b64) => {
+                          handleSchoolChange('schoolStampUrl', b64);
+                          handleProfileChange('schoolStampUrl', b64);
+                        },
+                        600
+                      );
+                    }
+                  }}
+                />
+
+                <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="w-24 h-16 border border-dashed border-purple-300 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0 relative shadow-2xs">
+                    {(schoolSettings.schoolStampUrl || profile.schoolStampUrl) ? (
+                      <img
+                        src={schoolSettings.schoolStampUrl || profile.schoolStampUrl}
+                        alt="Stempel Sekolah"
+                        className="max-h-14 max-w-20 object-contain drop-shadow-xs"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center gap-0.5 text-slate-400">
+                        <Stamp className="w-4 h-4 text-purple-400" />
+                        <span className="text-[9px] font-medium text-center">Belum ada</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-[11px] text-slate-600 leading-tight">
+                      Stempel otomatis ditempatkan <strong>berukuran 40x40 mm menggeser ke kanan mengenai tanda tangan Kepala Sekolah</strong> pada Lembar Kerja &amp; cetak PDF.
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      Disarankan file format PNG transparan atau foto cap stempel yang jelas.
+                    </p>
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => schoolStampInputRef.current?.click()}
+                        className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white rounded-md text-xs font-semibold cursor-pointer shadow-xs flex items-center gap-1.5 transition-colors"
+                      >
+                        <Upload className="w-3 h-3" />
+                        <span>{(schoolSettings.schoolStampUrl || profile.schoolStampUrl) ? 'Ganti Stempel' : 'Upload Stempel Sekolah'}</span>
+                      </button>
+                      {(schoolSettings.schoolStampUrl || profile.schoolStampUrl) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleSchoolChange('schoolStampUrl', '');
+                            handleProfileChange('schoolStampUrl', '');
+                          }}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded cursor-pointer transition-colors"
+                          title="Hapus Stempel Sekolah"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

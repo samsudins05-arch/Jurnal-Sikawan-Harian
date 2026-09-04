@@ -23,6 +23,7 @@ interface SavePdfModalProps {
   activities: ActivityItem[];
   profile: UserProfile;
   onSuccessNotification: (title: string, message: string, type?: 'success' | 'info' | 'error') => void;
+  onPdfSavedSuccess?: () => void;
 }
 
 export const SavePdfModal: React.FC<SavePdfModalProps> = ({
@@ -32,6 +33,7 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
   activities,
   profile,
   onSuccessNotification,
+  onPdfSavedSuccess,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
@@ -39,16 +41,21 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
   if (!isOpen) return null;
 
   const isMobileDevice = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const filledActivitiesCount = activities.filter((a) => a.activity.trim().length > 0).length;
+  const validActivities = activities.filter((a) => a.activity && a.activity.trim().length > 0 && a.activity.trim() !== '-');
+  const filledActivitiesCount = validActivities.length;
   const safeName = (profile.name || 'Guru').replace(/[^a-zA-Z0-9]/g, '_');
   const filename = `Jurnal_Kerja_Harian_${selectedDate}_${safeName}.pdf`;
 
   // Option 1: Direct High-Res PDF Download to Computer/Android Storage
   const handleDirectDownload = async () => {
+    if (filledActivitiesCount > 0 && onPdfSavedSuccess) {
+      onPdfSavedSuccess();
+    }
+
     setIsProcessing(true);
     setStatusMessage({
       type: 'info',
-      text: 'Sedang memproses & mengunduh berkas PDF A4...',
+      text: 'Sedang memproses & mengunduh berkas PDF F4 (210x330 mm)...',
     });
 
     try {
@@ -86,6 +93,10 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
 
   // Option 2: Mobile Share API (Direct save to Drive, WA, File Manager on Android)
   const handleMobileShare = async () => {
+    if (filledActivitiesCount > 0 && onPdfSavedSuccess) {
+      onPdfSavedSuccess();
+    }
+
     setIsProcessing(true);
     setStatusMessage({
       type: 'info',
@@ -112,6 +123,10 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
 
   // Option 3: Native System Print / Save as PDF Dialog
   const handleSystemPrintDialog = () => {
+    if (filledActivitiesCount > 0 && onPdfSavedSuccess) {
+      onPdfSavedSuccess();
+    }
+
     setStatusMessage({
       type: 'info',
       text: 'Membuka dialog sistem simpan PDF / cetak...',
@@ -176,7 +191,7 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
             <div className="flex items-center justify-between text-slate-600 border-b border-slate-200 pb-2">
               <span className="font-semibold text-slate-800">Ringkasan Dokumen:</span>
               <span className="font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200 font-semibold">
-                Kertas A4 Potrait
+                Kertas F4 Potrait (210 x 330 mm)
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
@@ -194,6 +209,23 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
               <span className="font-mono text-slate-400 truncate max-w-[200px]">{filename}</span>
             </div>
           </div>
+
+          {/* Matriks Status Note */}
+          {filledActivitiesCount === 0 ? (
+            <div className="p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-amber-50 text-amber-900 border-amber-200">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-semibold text-amber-800">Kegiatan Belum Diisi:</strong> Kotak pada Matriks Rekapitulasi tetap berwarna <span className="font-bold text-pink-600">Merah Muda</span> (tidak berubah hijau) karena guru belum mengisi kegiatan jurnal harian.
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 rounded-xl text-xs flex items-start gap-2.5 border bg-emerald-50 text-emerald-900 border-emerald-200">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-semibold text-emerald-800">Jurnal Siap &amp; Terverifikasi:</strong> {filledActivitiesCount} kegiatan telah diisi. Kotak pada Matriks Rekapitulasi kini <span className="font-bold text-emerald-700">BERUBAH MENJADI HIJAU</span>.
+              </div>
+            </div>
+          )}
 
           {/* Status Message */}
           {statusMessage && (
@@ -325,7 +357,7 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
 
         {/* Footer */}
         <div className="bg-slate-100 px-5 py-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-          <span>Format: Dokumen Resmi A4 (Siap Cetak)</span>
+          <span>Format: Dokumen Resmi F4 (210 x 330 mm - Siap Cetak)</span>
           <button
             type="button"
             onClick={onClose}
