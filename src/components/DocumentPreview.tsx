@@ -1,8 +1,6 @@
 import React from 'react';
 import { 
-  FileCheck,
-  Download,
-  RefreshCw
+  FileCheck
 } from 'lucide-react';
 import { ActivityItem, UserProfile, SchoolSettings } from '../types/journal';
 import { parseDateStrToIndonesian, parseDateStrToIndonesianNoDay } from '../utils/dateFormat';
@@ -45,31 +43,8 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             210 x 330 mm (Folio)
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:block text-[11px] text-slate-500 font-medium">
-            Format Cetak Standar F4
-          </div>
-          {onExportPdf && (
-            <button
-              id="btn-export-pdf-preview"
-              type="button"
-              onClick={onExportPdf}
-              disabled={isExporting}
-              className="bg-[#dc2626] hover:bg-[#b91c1c] active:bg-[#991b1b] text-white font-semibold px-3.5 py-1.5 rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-1.5 text-xs disabled:opacity-75 cursor-pointer"
-            >
-              {isExporting ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Memproses...</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>Simpan PDF</span>
-                </>
-              )}
-            </button>
-          )}
+        <div className="text-[11px] text-slate-500 font-medium">
+          Format Cetak Standar F4
         </div>
       </div>
 

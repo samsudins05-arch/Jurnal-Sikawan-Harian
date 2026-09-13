@@ -64,7 +64,7 @@ export const DEFAULT_SHIFTS: ShiftConfig[] = [
   },
 ];
 
-// Standar 6 Kegiatan Harian Guru (Lengkap Indikator Kinerja & Bukti Dukung)
+// Standar 6 Kegiatan Harian Guru (Ringkas & Efektif)
 export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
   {
     id: 'act_guru_1',
@@ -72,9 +72,8 @@ export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
     startMinute: '30',
     endHour: '07',
     endMinute: '15',
-    activity: 'Menyambut kehadiran peserta didik di gerbang sekolah dengan pembiasaan 5S (Senyum, Salam, Sapa, Sopan, Santun), mendampingi pengondisian apel pagi, menyanyikan lagu Indonesia Raya, dan doa bersama.',
-    indicator: 'Terlaksananya pembiasaan budaya positif karakter 5S dan 100% peserta didik terkondisikan tertib di kelas/lapangan.',
-    notes: 'Buku piket, presensi pagi, dan foto dokumentasi apel',
+    activity: 'Penyambutan siswa (5S), apel pagi, dan doa bersama',
+    notes: 'Buku piket, presensi pagi',
     photoUrl: '',
   },
   {
@@ -83,9 +82,8 @@ export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
     startMinute: '15',
     endHour: '09',
     endMinute: '30',
-    activity: 'Melaksanakan Kegiatan Belajar Mengajar (KBM) tatap muka interaktif berbasis Kurikulum Merdeka (apersepsi, eksplorasi konsep, diskusi kelompok terarah, dan pemanfaatan media ajar kontekstual).',
-    indicator: 'Ketercapaian Tujuan Pembelajaran (TP) sesi pagi dan terlaksananya pembelajaran berdiferensiasi aktif-partisipatif.',
-    notes: 'Modul Ajar, LKPD siswa, dan lembar observasi kelas',
+    activity: 'Pelaksanaan KBM tatap muka interaktif sesuai Modul Ajar',
+    notes: 'Modul Ajar, lembar LKPD',
     photoUrl: '',
   },
   {
@@ -94,9 +92,8 @@ export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
     startMinute: '45',
     endHour: '11',
     endMinute: '15',
-    activity: 'Melaksanakan bimbingan literasi dan numerasi di kelas/pojok baca, pendampingan diferensiasi bagi siswa yang memerlukan penguatan materi, serta pelaksanaan remedial dan pengayaan.',
-    indicator: 'Tuntasnya bimbingan intensif literasi-numerasi dan penguatan kompetensi esensial minimal 5-8 siswa.',
-    notes: 'Daftar hadir remedi, portofolio literasi, dan buku bimbingan',
+    activity: 'Bimbingan literasi, numerasi, serta remedial dan pengayaan',
+    notes: 'Daftar hadir remedi, portofolio',
     photoUrl: '',
   },
   {
@@ -105,9 +102,8 @@ export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
     startMinute: '15',
     endHour: '12',
     endMinute: '30',
-    activity: 'Melaksanakan asesmen formatif harian, memeriksa dan mengoreksi hasil latihan/tugas mandiri peserta didik, serta memberikan umpan balik (feedback) konstruktif.',
-    indicator: 'Terkoreksinya 100% lembar asesmen tugas siswa dan terinputnya data capaian kompetensi ke leger nilai harian.',
-    notes: 'Buku Daftar Nilai Harian dan lembar tugas terkoreksi',
+    activity: 'Pelaksanaan asesmen formatif dan pemeriksaan tugas siswa',
+    notes: 'Buku Nilai Harian, lembar tugas',
     photoUrl: '',
   },
   {
@@ -116,9 +112,8 @@ export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
     startMinute: '00',
     endHour: '14',
     endMinute: '00',
-    activity: 'Menyusun dan menyempurnakan administrasi perangkat pembelajaran, modul ajar terdiferensiasi, rubrik penilaian, serta menyiapkan media ajar inovatif untuk pertemuan esok hari.',
-    indicator: 'Tersedianya 1 set Modul Ajar terverifikasi, instrumen penilaian, dan media pembelajaran siap pakai.',
-    notes: 'Draf Modul Ajar Kurikulum Merdeka dan instrumen asesmen',
+    activity: 'Penyusunan modul ajar, rubrik asesmen, dan media pembelajaran',
+    notes: 'Modul Ajar, instrumen asesmen',
     photoUrl: '',
   },
   {
@@ -127,14 +122,13 @@ export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
     startMinute: '00',
     endHour: '15',
     endMinute: '00',
-    activity: 'Mengikuti kegiatan Komunitas Belajar (Kombel) intra-sekolah / KKG, refleksi evaluasi pembelajaran harian bersama rekan sejawat, dan koordinasi perkembangan belajar siswa dengan Kepala Sekolah/wali murid.',
-    indicator: 'Terdokumentasikannya catatan refleksi pembelajaran harian dan kesepakatan tindak lanjut peningkatan mutu pembelajaran.',
-    notes: 'Notula kegiatan Kombel, jurnal refleksi guru, dan log wali murid',
+    activity: 'Kegiatan Komunitas Belajar (Kombel) dan refleksi pembelajaran',
+    notes: 'Notula Kombel, jurnal refleksi',
     photoUrl: '',
   },
 ];
 
-// Standar 6 Kegiatan Harian Tenaga Kependidikan / Tendik / TU (Lengkap Indikator Kinerja & Bukti Dukung)
+// Standar 6 Kegiatan Harian Tenaga Kependidikan / Tendik / TU
 export const SIX_ACTIVITIES_TENDIK: ActivityItem[] = [
   {
     id: 'act_tendik_1',
@@ -142,9 +136,8 @@ export const SIX_ACTIVITIES_TENDIK: ActivityItem[] = [
     startMinute: '00',
     endHour: '08',
     endMinute: '00',
-    activity: 'Melaksanakan pengelolaan presensi harian pendidik & tenaga kependidikan (fingerprint & manual), membuka loket layanan administrasi sekolah, dan memeriksa kesiapan operasional ruang kantor.',
-    indicator: 'Rekapitulasi presensi harian guru & staf tercatat 100% tepat waktu serta ruang loket tata usaha siap beroperasi.',
-    notes: 'Rekap mesin presensi, buku tamu layanan, dan ceklis kantor',
+    activity: 'Pengelolaan presensi pegawai dan kesiapan operasional kantor',
+    notes: 'Rekap presensi, buku tamu',
     photoUrl: '',
   },
   {
@@ -153,9 +146,8 @@ export const SIX_ACTIVITIES_TENDIK: ActivityItem[] = [
     startMinute: '00',
     endHour: '10',
     endMinute: '00',
-    activity: 'Melaksanakan pengelolaan persuratan sekolah (pencatatan agenda surat dinas masuk/keluar, penyiapan lembar disposisi Kepala Sekolah, dan pengarsipan berkas dinas).',
-    indicator: 'Tercatat dan terdistribusikannya seluruh surat dinas masuk/keluar secara tertib dan terarsip aman.',
-    notes: 'Buku agenda surat dinas, berkas disposisi, dan arsip dokumen',
+    activity: 'Pengelolaan surat dinas masuk/keluar dan agenda disposisi',
+    notes: 'Buku agenda surat dinas',
     photoUrl: '',
   },
   {
@@ -164,9 +156,8 @@ export const SIX_ACTIVITIES_TENDIK: ActivityItem[] = [
     startMinute: '00',
     endHour: '12',
     endMinute: '00',
-    activity: 'Melakukan verifikasi dan pemutakhiran data peserta didik, PTK, rombongan belajar, dan sarana prasarana pada aplikasi Dapodikdasmen serta sinkronisasi server Pusdatin Kemendikbudristek.',
-    indicator: 'Tervalidasinya data pokok peserta didik dan PTK dengan status 0 invalid pada aplikasi Dapodik.',
-    notes: 'SPTJM Dapodik / lembar validasi Dapodikdasmen termutakhir',
+    activity: 'Pemutakhiran data Dapodikdasmen dan verifikasi kepegawaian',
+    notes: 'SPTJM Dapodik / InfoGTK',
     photoUrl: '',
   },
   {
@@ -175,9 +166,8 @@ export const SIX_ACTIVITIES_TENDIK: ActivityItem[] = [
     startMinute: '30',
     endHour: '13',
     endMinute: '30',
-    activity: 'Melaksanakan inventarisasi Barang Milik Daerah (BMD/KIB/KIR), pencatatan mutasi aset sarpras sekolah, dan penataan buku induk inventaris sarana prasarana.',
-    indicator: 'Terdatanya kondisi fisik sarpras ruang kelas/kantor dan tertempelnya kode barcode/label inventaris barang.',
-    notes: 'Buku Induk Inventaris, Kartu Inventaris Ruangan (KIR), dan foto aset',
+    activity: 'Pencatatan inventaris sarana prasarana sekolah (KIR/KIB)',
+    notes: 'Buku Induk Inventaris',
     photoUrl: '',
   },
   {
@@ -186,9 +176,8 @@ export const SIX_ACTIVITIES_TENDIK: ActivityItem[] = [
     startMinute: '30',
     endHour: '14',
     endMinute: '30',
-    activity: 'Menyusun kelengkapan berkas administrasi pertanggungjawaban belanja BOSP (Surat Pertanggungjawaban/SPJ), rekonsiliasi Buku Kas Umum (BKU), dan verifikasi kuitansi belanja operasional.',
-    indicator: 'Tersusunnya dokumen SPJ BOSP yang akuntabel, tertib bukti pembayaran transaksi, dan sesuai juknis BOS.',
-    notes: 'Draf BKU, kuitansi sah bermaterai, dan faktur pajak belanja',
+    activity: 'Penyusunan berkas SPJ BOSP dan verifikasi bukti belanja',
+    notes: 'Draf BKU, kuitansi sah',
     photoUrl: '',
   },
   {
@@ -197,14 +186,13 @@ export const SIX_ACTIVITIES_TENDIK: ActivityItem[] = [
     startMinute: '30',
     endHour: '15',
     endMinute: '30',
-    activity: 'Melaksanakan layanan administrasi kesiswaan (legalisir ijazah, surat keterangan siswa aktif/pindah sekolah), pengarsipan buku induk kesiswaan, dan pelaporan harian layanan tata usaha.',
-    indicator: 'Tuntasnya pelayanan administrasi siswa/wali murid secara prima dan amannya penyimpanan dokumen rahasia sekolah.',
-    notes: 'Buku ekspedisi layanan kesiswaan, buku induk siswa, dan laporan TU',
+    activity: 'Pelayanan administrasi kesiswaan dan mutasi peserta didik',
+    notes: 'Buku ekspedisi layanan kesiswaan',
     photoUrl: '',
   },
 ];
 
-// Default harian (kini berisi 6 kegiatan lengkap dengan indikator masing-masing)
+// Default harian (kini berisi 6 kegiatan ringkas standar)
 export const INITIAL_ACTIVITIES: ActivityItem[] = SIX_ACTIVITIES_GURU;
 
 // Paket 6 Kegiatan Lengkap 1 Hari Kerja
@@ -214,7 +202,7 @@ export const FULL_DAY_PACKAGES: FullDayTemplatePackage[] = [
     title: 'Paket Standar 6 Kegiatan Harian Guru',
     role: 'Guru',
     shift: 'Guru : Shift Pagi (06.30 - 15.00)',
-    description: 'Format ideal 6 kegiatan kerja harian guru (KBM, Diferensiasi, Asesmen, Administrasi Ajar & Kombel) lengkap dengan indikator kinerja.',
+    description: 'Format ringkas 6 kegiatan kerja harian guru (Penyambutan, KBM, Bimbingan, Asesmen, Administrasi Ajar & Kombel).',
     activities: SIX_ACTIVITIES_GURU,
   },
   {
@@ -222,12 +210,12 @@ export const FULL_DAY_PACKAGES: FullDayTemplatePackage[] = [
     title: 'Paket Standar 6 Kegiatan Harian Tendik / TU',
     role: 'Tendik',
     shift: 'Tenaga Kependidikan / TU (07.00 - 15.30)',
-    description: 'Format ideal 6 kegiatan kerja harian Tenaga Kependidikan / Tata Usaha (Presensi, Persuratan, Dapodik, Sarpras, SPJ & Kesiswaan) lengkap dengan indikator kinerja.',
+    description: 'Format ringkas 6 kegiatan kerja harian Tenaga Kependidikan / Tata Usaha (Presensi, Persuratan, Dapodik, Sarpras, SPJ & Kesiswaan).',
     activities: SIX_ACTIVITIES_TENDIK,
   },
 ];
 
-// Pustaka Kategori Template Kegiatan Guru & Tendik (Lengkap dengan Indikator Kinerja & Bukti Dukung)
+// Pustaka Kategori Template Kegiatan Guru & Tendik (Ringkas, Tanpa Jam & Tanpa Indikator)
 export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
   // --- 6 KATEGORI GURU ---
   {
@@ -235,24 +223,23 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Guru',
     items: [
       {
-        text: 'Menyambut kehadiran peserta didik di gerbang sekolah dengan pembiasaan 5S (Senyum, Salam, Sapa, Sopan, Santun), pengondisian apel pagi, menyanyikan lagu Indonesia Raya, dan doa bersama.',
-        indicator: 'Terlaksananya pembiasaan budaya positif karakter 5S dan 100% siswa terkondisikan tertib di kelas/lapangan.',
-        notes: 'Buku piket, presensi kehadiran pagi, dan foto dokumentasi apel',
-        timeRange: '06.30 - 07.15',
+        text: 'Penyambutan peserta didik (5S), apel pagi, dan doa bersama',
+        notes: 'Buku piket & presensi pagi',
         role: 'Guru',
       },
       {
-        text: 'Memimpin kegiatan literasi pagi, tadarus Al-Quran / pembacaan Asmaul Husna / doa bersama dan pembacaan ikrar pelajar di ruang kelas.',
-        indicator: 'Keterlibatan aktif 100% siswa dalam kegiatan penguatan spiritualitas dan literasi pagi.',
-        notes: 'Jurnal pembiasaan kelas dan buku catatan literasi pagi siswa',
-        timeRange: '06.45 - 07.15',
+        text: 'Pembiasaan literasi, numerasi pagi, dan tadarus Al-Quran di kelas',
+        notes: 'Jurnal pembiasaan kelas',
         role: 'Guru',
       },
       {
-        text: 'Melaksanakan pengawasan kedisiplinan pakaian seragam, kebersihan kuku, dan pembiasaan kerapian peserta didik sebelum masuk jam pelajaran pertama.',
-        indicator: 'Tertibnya standar kedisiplinan dan kerapian peserta didik 100%.',
-        notes: 'Buku catatan kedisiplinan siswa dan dokumentasi pemeriksaan',
-        timeRange: '06.45 - 07.15',
+        text: 'Pemeriksaan kedisiplinan pakaian seragam dan kerapian siswa',
+        notes: 'Buku catatan kedisiplinan',
+        role: 'Guru',
+      },
+      {
+        text: 'Pengondisian ketertiban kelas dan menyanyikan lagu wajib nasional',
+        notes: 'Foto kegiatan pembiasaan',
         role: 'Guru',
       },
     ],
@@ -262,51 +249,54 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Guru',
     items: [
       {
-        text: 'Melaksanakan Kegiatan Belajar Mengajar (KBM) tatap muka interaktif berbasis Kurikulum Merdeka (apersepsi kontekstual, pemaparan materi, diskusi kelompok terarah, dan presentasi hasil karya).',
-        indicator: 'Ketercapaian Tujuan Pembelajaran (TP) sesi pagi dan terciptanya suasana kelas yang kondusif, aktif, dan menyenangkan.',
-        notes: 'Modul Ajar, lembar LKPD, dan lembar observasi aktivitas belajar',
-        timeRange: '07.15 - 09.30',
+        text: 'Pelaksanaan KBM tatap muka materi inti sesuai Modul Ajar',
+        notes: 'Modul Ajar & lembar LKPD',
         role: 'Guru',
       },
       {
-        text: 'Melaksanakan pembelajaran praktik sains / seni budaya / PJOK kontekstual dengan pemanfaatan media konkret dan alat peraga edukatif.',
-        indicator: 'Tuntasnya keterampilan unjuk kerja praktik siswa sesuai rubrik capaian kompetensi.',
-        notes: 'Rubrik penilaian unjuk kerja dan dokumentasi kegiatan praktik siswa',
-        timeRange: '07.15 - 09.30',
+        text: 'Pembelajaran interaktif, diskusi kelompok terarah, dan presentasi siswa',
+        notes: 'Lembar observasi kelas',
         role: 'Guru',
       },
       {
-        text: 'Melaksanakan pembelajaran berbasis proyek kokurikuler P5 (Projek Penguatan Profil Pelajar Pancasila) dengan tema Kearifan Lokal / Gaya Hidup Berkelanjutan.',
-        indicator: 'Terbentuknya karakter gotong royong, nalar kritis, dan kreativitas siswa dalam pengerjaan proyek.',
-        notes: 'Rubrik dimensi profil P5 dan portofolio progres proyek siswa',
-        timeRange: '07.15 - 09.30',
+        text: 'Praktik pembelajaran kontekstual dan pemanfaatan media alat peraga',
+        notes: 'Dokumentasi praktik siswa',
+        role: 'Guru',
+      },
+      {
+        text: 'Pelaksanaan kegiatan Projek Penguatan Profil Pelajar Pancasila (P5)',
+        notes: 'Rubrik penilaian P5',
+        role: 'Guru',
+      },
+      {
+        text: 'Pendampingan aktivitas belajar siswa dan tanya jawab pemahaman materi',
+        notes: 'Lembar kerja siswa',
         role: 'Guru',
       },
     ],
   },
   {
-    category: 'Guru 3: Diferensiasi & Bimbingan Literasi',
+    category: 'Guru 3: Diferensiasi & Bimbingan',
     role: 'Guru',
     items: [
       {
-        text: 'Melaksanakan pendampingan bimbingan literasi dan numerasi terbimbing di pojok baca/kelas, serta bimbingan remedial bagi siswa yang belum tuntas materi.',
-        indicator: 'Tuntasnya bimbingan intensif literasi-numerasi dan peningkatan pemahaman bagi 5-8 siswa remedial.',
-        notes: 'Daftar hadir remedi, portofolio lembar kerja, dan buku bimbingan',
-        timeRange: '09.45 - 11.15',
+        text: 'Bimbingan remedial bagi siswa yang belum mencapai tujuan pembelajaran',
+        notes: 'Daftar hadir remedi & nilai',
         role: 'Guru',
       },
       {
-        text: 'Memberikan program pengayaan materi lanjutan dan tugas tantangan eksploratif bagi siswa dengan capaian belajar tinggi.',
-        indicator: 'Meningkatnya daya nalar kritis siswa berkemampuan tinggi melalui materi pengayaan tingkat lanjut.',
-        notes: 'Lembar tugas pengayaan dan hasil karya analisis siswa',
-        timeRange: '09.45 - 11.15',
+        text: 'Pemberian materi pengayaan bagi siswa berpencapaian tinggi',
+        notes: 'Lembar tugas pengayaan',
         role: 'Guru',
       },
       {
-        text: 'Melaksanakan bimbingan konseling individual dan pembinaan karakter bagi peserta didik yang memerlukan perhatian khusus.',
-        indicator: 'Terpetakannya solusi hambatan belajar dan perilaku siswa dengan tindak lanjut yang terukur.',
-        notes: 'Buku catatan kasus / jurnal bimbingan konseling guru kelas',
-        timeRange: '09.45 - 11.15',
+        text: 'Pendampingan khusus literasi dan numerasi terbimbing di pojok baca',
+        notes: 'Buku bimbingan literasi',
+        role: 'Guru',
+      },
+      {
+        text: 'Bimbingan konseling dan motivasi belajar peserta didik di kelas',
+        notes: 'Buku catatan bimbingan',
         role: 'Guru',
       },
     ],
@@ -316,78 +306,75 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Guru',
     items: [
       {
-        text: 'Melaksanakan asesmen formatif harian, memeriksa dan mengoreksi lembar latihan serta tugas mandiri peserta didik, dan memberikan catatan umpan balik (feedback).',
-        indicator: 'Terkoreksinya 100% lembar asesmen latihan siswa dan terinputnya data nilai capaian ke buku nilai harian.',
-        notes: 'Buku Daftar Nilai Harian (Leger Nilai) dan sampel lembar tugas bertanda tangan',
-        timeRange: '11.15 - 12.30',
+        text: 'Pelaksanaan asesmen formatif harian dan kuis pemahaman materi',
+        notes: 'Instrumen asesmen formatif',
         role: 'Guru',
       },
       {
-        text: 'Melaksanakan asesmen sumatif lingkup materi (ulangan harian) dan analisis butir soal evaluasi pembelajaran.',
-        indicator: 'Tersedianya rekapitulasi data ketuntasan hasil belajar dan analisis daya serap materi siswa.',
-        notes: 'Format analisis butir soal dan rekapitulasi nilai ulangan',
-        timeRange: '11.15 - 12.30',
+        text: 'Pemeriksaan dan pengoreksian lembar latihan serta tugas mandiri siswa',
+        notes: 'Lembar tugas bertanda tangan',
         role: 'Guru',
       },
       {
-        text: 'Memeriksa dan memvalidasi kelengkapan portofolio hasil karya siswa serta catatan perkembangan psikomotorik siswa.',
-        indicator: 'Terdokumentasikannya rekam jejak portofolio perkembangan karya belajar siswa secara sistematis.',
-        notes: 'Buku map portofolio siswa dan rubrik penilaian perkembangan',
-        timeRange: '11.15 - 12.30',
-        role: 'Guru',
-      },
-    ],
-  },
-  {
-    category: 'Guru 5: Perangkat Ajar & Modul',
-    role: 'Guru',
-    items: [
-      {
-        text: 'Menyusun dan menyempurnakan administrasi perangkat pembelajaran, modul ajar terdiferensiasi, instrumen asesmen, serta menyiapkan media ajar untuk pertemuan berikutnya.',
-        indicator: 'Tersedianya 1 set Modul Ajar terverifikasi dan media pembelajaran siap pakai untuk esok hari.',
-        notes: 'Draf Modul Ajar Kurikulum Merdeka dan instrumen asesmen lengkap',
-        timeRange: '13.00 - 14.00',
+        text: 'Pelaksanaan asesmen sumatif materi / ulangan harian',
+        notes: 'Daftar nilai ulangan harian',
         role: 'Guru',
       },
       {
-        text: 'Mengembangkan media pembelajaran interaktif berbasis digital (Canva / Google Slides / Quizizz) dan lembar LKPD kontekstual.',
-        indicator: 'Tersedianya media ajar digital interaktif yang siap ditayangkan dalam pembelajaran.',
-        notes: 'Tautan bahan tayang presentasi / QR Code lembar kerja interaktif',
-        timeRange: '13.00 - 14.00',
-        role: 'Guru',
-      },
-      {
-        text: 'Mengisi administrasi presensi bulanan siswa, buku mutasi kelas, dan rekapitulasi capaian ketidakhadiran siswa.',
-        indicator: 'Tersinkronisasinya data presensi kehadiran siswa kelas 100% akurat.',
-        notes: 'Buku presensi kelas dan rekapitulasi absensi harian',
-        timeRange: '13.00 - 14.00',
+        text: 'Pemeriksaan kelengkapan portofolio hasil karya dan nilai siswa',
+        notes: 'Buku rekapitulasi nilai',
         role: 'Guru',
       },
     ],
   },
   {
-    category: 'Guru 6: Kombel, PKB & Refleksi',
+    category: 'Guru 5: Perangkat Ajar & Administrasi',
     role: 'Guru',
     items: [
       {
-        text: 'Mengikuti kegiatan Komunitas Belajar (Kombel) intra-sekolah / KKG, refleksi evaluasi pembelajaran harian bersama rekan sejawat, dan koordinasi peningkatan mutu pembelajaran.',
-        indicator: 'Terdokumentasikannya catatan refleksi pembelajaran harian dan kesepakatan tindak lanjut mutu.',
-        notes: 'Notula kegiatan Kombel, catatan refleksi guru, dan lembar penghubung wali murid',
-        timeRange: '14.00 - 15.00',
+        text: 'Penyusunan dan penyempurnaan Modul Ajar Kurikulum Merdeka',
+        notes: 'Draf Modul Ajar',
         role: 'Guru',
       },
       {
-        text: 'Mengikuti pelatihan mandiri pada Platform Merdeka Mengajar (PMM) / webinar peningkatan kompetensi pedagogik guru.',
-        indicator: 'Terselesaikannya 1 modul topik PMM dan bukti aksi nyata / sertifikat pelatihan.',
-        notes: 'Tangkapan layar modul PMM / sertifikat partisipasi webinar',
-        timeRange: '14.00 - 15.00',
+        text: 'Pengembangan media pembelajaran interaktif dan bahan tayang digital',
+        notes: 'Bahan tayang / presentasi',
         role: 'Guru',
       },
       {
-        text: 'Melakukan komunikasi dan koordinasi perkembangan belajar serta karakter peserta didik dengan wali murid melalui buku penghubung / paguyuban kelas.',
-        indicator: 'Terjalinnya sinergi kemitraan positif antara guru kelas dengan orang tua murid.',
-        notes: 'Catatan buku penghubung dan notula konsultasi wali murid',
-        timeRange: '14.00 - 15.00',
+        text: 'Penyusunan instrumen kisi-kisi soal dan rubrik penilaian asesmen',
+        notes: 'Rubrik penilaian ajar',
+        role: 'Guru',
+      },
+      {
+        text: 'Pengisian administrasi presensi siswa dan rekapitulasi ketidakhadiran',
+        notes: 'Buku presensi kelas',
+        role: 'Guru',
+      },
+    ],
+  },
+  {
+    category: 'Guru 6: Kombel, Refleksi & PKB',
+    role: 'Guru',
+    items: [
+      {
+        text: 'Kegiatan Komunitas Belajar (Kombel) intra-sekolah / KKG guru',
+        notes: 'Notula kegiatan Kombel',
+        role: 'Guru',
+      },
+      {
+        text: 'Refleksi dan evaluasi hasil pembelajaran harian bersama rekan sejawat',
+        notes: 'Lembar jurnal refleksi',
+        role: 'Guru',
+      },
+      {
+        text: 'Pelatihan mandiri peningkatan kompetensi pada Platform Merdeka Mengajar (PMM)',
+        notes: 'Bukti aksi nyata / modul PMM',
+        role: 'Guru',
+      },
+      {
+        text: 'Komunikasi dan koordinasi perkembangan belajar siswa dengan orang tua / wali',
+        notes: 'Buku penghubung / paguyuban',
         role: 'Guru',
       },
     ],
@@ -399,24 +386,18 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Tendik',
     items: [
       {
-        text: 'Melaksanakan pengelolaan presensi harian pendidik & tenaga kependidikan (fingerprint & manual), membuka loket layanan administrasi sekolah, dan memeriksa kesiapan operasional kantor.',
-        indicator: 'Rekapitulasi presensi harian guru & staf tercatat 100% tepat waktu serta ruang loket tata usaha siap beroperasi.',
-        notes: 'Rekap mesin presensi, buku tamu layanan, dan ceklis kantor',
-        timeRange: '07.00 - 08.00',
+        text: 'Pengelolaan presensi harian pegawai dan kesiapan operasional kantor',
+        notes: 'Rekap presensi harian',
         role: 'Tendik',
       },
       {
-        text: 'Melaksanakan pengecekan kebersihan lingkungan sekolah, koordinasi dengan petugas kebersihan, serta kesiapan fasilitas air dan listrik.',
-        indicator: 'Terjaminnya kebersihan dan kenyamanan seluruh ruang kelas, toilet, dan kantor sebelum aktivitas dimulai.',
-        notes: 'Lembar ceklis kebersihan harian dan foto pemantauan lingkungan',
-        timeRange: '07.00 - 08.00',
+        text: 'Pemeriksaan kebersihan lingkungan sekolah dan fasilitas air/listrik',
+        notes: 'Lembar ceklis kebersihan',
         role: 'Tendik',
       },
       {
-        text: 'Membuka loket layanan informasi sekolah, menerima tamu dinas, dan mencatat permohonan layanan umum di buku tamu sekolah.',
-        indicator: 'Terlayaninya seluruh tamu dan kepentingan wali murid dengan ramah dan tercatat pada buku tamu.',
-        notes: 'Buku register tamu dinas dan formulir permohonan layanan',
-        timeRange: '07.00 - 08.00',
+        text: 'Pelayanan loket informasi umum sekolah dan penerimaan tamu dinas',
+        notes: 'Buku tamu dinas',
         role: 'Tendik',
       },
     ],
@@ -426,24 +407,18 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Tendik',
     items: [
       {
-        text: 'Melaksanakan pengelolaan persuratan sekolah (pencatatan agenda surat dinas masuk/keluar, penyiapan lembar disposisi Kepala Sekolah, dan pengarsipan berkas dinas).',
-        indicator: 'Tercatat dan terdistribusikannya seluruh surat dinas masuk/keluar secara tertib dan terarsip aman.',
-        notes: 'Buku agenda surat dinas, berkas disposisi, dan arsip dokumen',
-        timeRange: '08.00 - 10.00',
+        text: 'Pengelolaan agenda surat dinas masuk/keluar dan lembar disposisi',
+        notes: 'Buku agenda persuratan',
         role: 'Tendik',
       },
       {
-        text: 'Membuat konsep draf surat dinas keluar (Surat Tugas, Surat Undangan Rapat, Surat Pengantar Dinas) dan mengajukan persetujuan Kepala Sekolah.',
-        indicator: 'Diterbitkannya surat dinas resmi dengan nomor registrasi yang valid dan sesuai tata naskah dinas.',
-        notes: 'Draf surat bertanda tangan basah / barcode dan lembar tembusan',
-        timeRange: '08.00 - 10.00',
+        text: 'Penyusunan draf surat tugas dinas, surat undangan, dan pengantar',
+        notes: 'Draf naskah surat dinas',
         role: 'Tendik',
       },
       {
-        text: 'Melaksanakan digitalisasi arsip persuratan dan dokumen penting sekolah ke dalam sistem penyimpanan awan (Google Drive arsip sekolah).',
-        indicator: 'Tersimpannya salinan digital surat masuk/keluar dalam folder terindeks yang mudah diakses.',
-        notes: 'Tautan folder arsip digital dan daftar indeks arsip',
-        timeRange: '08.00 - 10.00',
+        text: 'Digitalisasi arsip dokumen dan penataan berkas persuratan sekolah',
+        notes: 'Folder arsip digital',
         role: 'Tendik',
       },
     ],
@@ -453,24 +428,18 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Tendik',
     items: [
       {
-        text: 'Melakukan verifikasi dan pemutakhiran data peserta didik, PTK, rombongan belajar, dan sarana prasarana pada aplikasi Dapodikdasmen serta sinkronisasi server Pusdatin Kemendikbudristek.',
-        indicator: 'Tervalidasinya data pokok peserta didik dan PTK dengan status 0 invalid pada aplikasi Dapodik.',
-        notes: 'SPTJM Dapodik / lembar validasi Dapodikdasmen termutakhir',
-        timeRange: '10.00 - 12.00',
+        text: 'Verifikasi dan pemutakhiran data peserta didik dan PTK pada Dapodik',
+        notes: 'Lembar validasi Dapodik',
         role: 'Tendik',
       },
       {
-        text: 'Melakukan pemrosesan Nomor Induk Siswa Nasional (NISN) baru bagi peserta didik baru dan mutasi keluar/masuk pada portal VervalPD.',
-        indicator: 'Terbitnya NISN valid dan terselesaikannya persetujuan mutasi siswa pada sistem VervalPD.',
-        notes: 'Tangkapan layar bukti persetujuan mutasi VervalPD / daftar NISN',
-        timeRange: '10.00 - 12.00',
+        text: 'Pengurusan verifikasi mutasi peserta didik dan validasi NISN di VervalPD',
+        notes: 'Bukti persetujuan mutasi',
         role: 'Tendik',
       },
       {
-        text: 'Melakukan verifikasi data sertifikasi pendidik, riwayat kenaikan gaji berkala (KGB), dan pemutakhiran riwayat kepangkatan PTK pada InfoGTK.',
-        indicator: 'Tervalidasinya status InfoGTK guru penerima tunjangan profesi dan akuratnya data riwayat kepegawaian.',
-        notes: 'Lembar cetak InfoGTK status valid dan salinan SK KGB',
-        timeRange: '10.00 - 12.00',
+        text: 'Pengecekan validasi data kepegawaian dan riwayat KGB pada InfoGTK',
+        notes: 'Lembar cetak InfoGTK',
         role: 'Tendik',
       },
     ],
@@ -480,24 +449,18 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Tendik',
     items: [
       {
-        text: 'Melaksanakan inventarisasi Barang Milik Daerah (BMD/KIB/KIR), pencatatan mutasi aset sarpras sekolah, dan penataan buku induk inventaris sarana prasarana.',
-        indicator: 'Terdatanya kondisi fisik sarpras ruang kelas/kantor dan tertempelnya kode barcode/label inventaris barang.',
-        notes: 'Buku Induk Inventaris, Kartu Inventaris Ruangan (KIR), dan foto aset',
-        timeRange: '12.30 - 13.30',
+        text: 'Pencatatan inventaris Barang Milik Daerah (KIR/KIB) dan mutasi sarpras',
+        notes: 'Buku Induk Inventaris',
         role: 'Tendik',
       },
       {
-        text: 'Melakukan pengecekan fisik berkala kelayakan fasilitas sarana prasarana sekolah (meja kursi, proyektor, kelistrikan, MCK) dan merekap usulan perbaikan.',
-        indicator: 'Tersedianya rekapitulasi data kondisi sarpras (baik, rusak ringan, rusak berat) sebagai dasar RKAS.',
-        notes: 'Format ceklis kondisi fisik sarpras dan dokumentasi visual',
-        timeRange: '12.30 - 13.30',
+        text: 'Pengecekan kelayakan fasilitas fisik sarana prasarana sekolah',
+        notes: 'Format ceklis sarpras',
         role: 'Tendik',
       },
       {
-        text: 'Melaksanakan pencatatan penerimaan buku teks kurikulum merdeka dan barang habis pakai (ATK) ke dalam kartu stok persediaan barang.',
-        indicator: 'Tertibnya pembukuan keluar masuk barang habis pakai dan terjaganya ketersediaan ATK sekolah.',
-        notes: 'Buku kartu stok persediaan barang dan berita acara serah terima',
-        timeRange: '12.30 - 13.30',
+        text: 'Penerimaan dan pencatatan buku teks kurikulum serta persediaan ATK',
+        notes: 'Kartu stok barang ATK',
         role: 'Tendik',
       },
     ],
@@ -507,24 +470,18 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Tendik',
     items: [
       {
-        text: 'Menyusun kelengkapan berkas administrasi pertanggungjawaban belanja BOSP (Surat Pertanggungjawaban/SPJ), rekonsiliasi Buku Kas Umum (BKU), dan verifikasi kuitansi belanja operasional.',
-        indicator: 'Tersusunnya dokumen SPJ BOSP yang akuntabel, tertib bukti pembayaran transaksi, dan sesuai juknis BOS.',
-        notes: 'Draf BKU, kuitansi sah bermaterai, dan faktur pajak belanja',
-        timeRange: '13.30 - 14.30',
+        text: 'Penyusunan berkas SPJ BOSP dan verifikasi kuitansi bukti belanja',
+        notes: 'Draf BKU & kuitansi sah',
         role: 'Tendik',
       },
       {
-        text: 'Melakukan input dan pelaporan realisasi belanja modal dan operasional pada aplikasi SIPLAH dan ARKAS (Aplikasi Rencana Kegiatan dan Anggaran Sekolah).',
-        indicator: 'Tersinkronisasinya transaksi pembelanjaan ARKAS dengan rekening koran sekolah secara berimbang.',
-        notes: 'Bukti cetak transaksi BKU ARKAS dan nota dinas belanja',
-        timeRange: '13.30 - 14.30',
+        text: 'Pencatatan realisasi pembelanjaan operasional pada ARKAS dan SIPLAH',
+        notes: 'Bukti transaksi ARKAS',
         role: 'Tendik',
       },
       {
-        text: 'Menyiapkan berkas pemotongan dan penyetoran pajak belanja dinas (PPh 21, PPh 22, PPh 23, dan PPN) melalui billing DJP Online.',
-        indicator: 'Tuntasnya penyetoran pajak daerah/negara dan terarsipnya Bukti Penerimaan Negara (BPN).',
-        notes: 'Kode billing dan lembar Bukti Penerimaan Negara (BPN)',
-        timeRange: '13.30 - 14.30',
+        text: 'Penyiapan berkas kode billing dan bukti penyetoran pajak dinas',
+        notes: 'Bukti Penerimaan Negara (BPN)',
         role: 'Tendik',
       },
     ],
@@ -534,24 +491,18 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Tendik',
     items: [
       {
-        text: 'Melaksanakan layanan administrasi kesiswaan (legalisir ijazah, surat keterangan siswa aktif/pindah sekolah), pengarsipan buku induk kesiswaan, dan pelaporan harian layanan tata usaha.',
-        indicator: 'Tuntasnya pelayanan administrasi siswa/wali murid secara prima dan amannya penyimpanan dokumen rahasia sekolah.',
-        notes: 'Buku ekspedisi layanan kesiswaan, buku induk siswa, dan laporan TU',
-        timeRange: '14.30 - 15.30',
+        text: 'Pelayanan administrasi kesiswaan, legalisir ijazah, dan surat keterangan',
+        notes: 'Buku ekspedisi kesiswaan',
         role: 'Tendik',
       },
       {
-        text: 'Melakukan penulisan dan pemutakhiran data riwayat akademik dan non-akademik siswa pada Buku Induk Register Peserta Didik.',
-        indicator: 'Terdatanya profil lengkap peserta didik secara permanen pada dokumen arsip negara (buku induk).',
-        notes: 'Lembar Buku Induk Siswa bernomor stambuk resmi',
-        timeRange: '14.30 - 15.30',
+        text: 'Penulisan dan pemutakhiran riwayat siswa pada Buku Induk Register',
+        notes: 'Buku Induk Siswa',
         role: 'Tendik',
       },
       {
-        text: 'Melaksanakan verifikasi berkas usulan Program Indonesia Pintar (PIP) dan koordinasi aktivasi buku tabungan SimPel siswa penerima bantuan.',
-        indicator: 'Tervalidasinya data usulan nominasi PIP dan terfasilitasinya penyaluran hak bantuan siswa.',
-        notes: 'Daftar SK Nominasi PIP dan tanda terima penyerahan surat pengantar',
-        timeRange: '14.30 - 15.30',
+        text: 'Verifikasi berkas usulan Program Indonesia Pintar (PIP) siswa',
+        notes: 'Daftar nominasi PIP',
         role: 'Tendik',
       },
     ],

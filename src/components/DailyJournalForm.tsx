@@ -12,9 +12,6 @@ import {
   X, 
   Layers, 
   ChevronDown, 
-  Target,
-  Download,
-  RefreshCw,
   Save
 } from 'lucide-react';
 import { ActivityItem, ShiftConfig, UserProfile } from '../types/journal';
@@ -330,18 +327,6 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                   />
                 </div>
 
-                {/* Indikator Kinerja / Capaian Output */}
-                <div className="flex items-center gap-2 bg-emerald-50/70 border border-emerald-200/90 rounded-lg px-2.5 py-1.5 shadow-2xs">
-                  <Target className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <input
-                    type="text"
-                    value={item.indicator || ''}
-                    onChange={(e) => handleUpdateActivity(index, 'indicator', e.target.value)}
-                    placeholder="Indikator Kinerja / Capaian Output (misal: Terlaksananya pembiasaan 5S dan KBM aktif)..."
-                    className="w-full bg-transparent text-xs text-emerald-950 placeholder-emerald-600/70 focus:outline-none font-medium"
-                  />
-                </div>
-
                 {/* Photo & Quick Template toolbar */}
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
@@ -415,7 +400,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
           )}
         </div>
 
-        {/* Action buttons: + Tambah Baris Baru, Simpan Jurnal, and Simpan PDF & Rekap */}
+        {/* Action buttons: + Tambah Baris Baru and Simpan Jurnal */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
           <button
             id="btn-add-activity-row"
@@ -437,28 +422,6 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
             >
               <Save className="w-4 h-4" />
               <span>Simpan Jurnal</span>
-            </button>
-          )}
-
-          {onExportPdf && (
-            <button
-              id="btn-save-pdf-form"
-              type="button"
-              onClick={onExportPdf}
-              disabled={isExporting}
-              className="px-5 py-2.5 bg-[#dc2626] hover:bg-[#b91c1c] active:bg-[#991b1b] text-white font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-lg disabled:opacity-75"
-            >
-              {isExporting ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Memproses PDF...</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4 stroke-[2.5]" />
-                  <span>Simpan PDF &amp; Rekap</span>
-                </>
-              )}
             </button>
           )}
         </div>

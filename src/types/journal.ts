@@ -12,10 +12,8 @@ export interface ActivityItem {
 
 export interface ActivityTemplateItem {
   text: string;
-  indicator: string; // Indikator Kinerja / Capaian Output
-  notes: string; // Keterangan / Bukti Dukung
+  notes?: string; // Keterangan / Bukti Dukung
   role?: 'Guru' | 'Tendik' | 'Umum';
-  timeRange?: string; // e.g. "06.30 - 07.15"
 }
 
 export interface ActivityTemplateCategory {

@@ -793,21 +793,23 @@ export default function App() {
   // Handle Quick Template Insertion (Support modifying row or adding manual row)
   const handleApplyTemplate = (
     activityText: string, 
-    notesText: string, 
-    indicatorText?: string,
-    timeData?: { startHour?: string; startMinute?: string; endHour?: string; endMinute?: string },
+    notesText?: string, 
     asNewRow?: boolean
   ) => {
     setActivities((prev) => {
       if (asNewRow || targetTemplateIndex < 0 || targetTemplateIndex >= prev.length) {
+        const lastAct = prev[prev.length - 1];
+        const startH = lastAct ? lastAct.endHour : '07';
+        const startM = lastAct ? lastAct.endMinute : '00';
+        const endH = String(Math.min(23, Number(startH) + 1)).padStart(2, '0');
+        const endM = startM;
         const newAct: ActivityItem = {
           id: `act_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          startHour: timeData?.startHour || '07',
-          startMinute: timeData?.startMinute || '00',
-          endHour: timeData?.endHour || '08',
-          endMinute: timeData?.endMinute || '00',
+          startHour: startH,
+          startMinute: startM,
+          endHour: endH,
+          endMinute: endM,
           activity: activityText,
-          indicator: indicatorText || '',
           notes: notesText || '',
           photoUrl: '',
         };
@@ -819,12 +821,7 @@ export default function App() {
         updated[targetTemplateIndex] = {
           ...updated[targetTemplateIndex],
           activity: activityText,
-          indicator: indicatorText !== undefined ? indicatorText : updated[targetTemplateIndex].indicator,
           notes: notesText !== undefined ? notesText : updated[targetTemplateIndex].notes,
-          startHour: timeData?.startHour || updated[targetTemplateIndex].startHour,
-          startMinute: timeData?.startMinute || updated[targetTemplateIndex].startMinute,
-          endHour: timeData?.endHour || updated[targetTemplateIndex].endHour,
-          endMinute: timeData?.endMinute || updated[targetTemplateIndex].endMinute,
         };
       }
       return updated;
