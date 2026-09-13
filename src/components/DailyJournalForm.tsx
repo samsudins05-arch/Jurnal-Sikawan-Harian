@@ -159,10 +159,10 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
       <button
         id="btn-shift-selector"
         onClick={onOpenShiftModal}
-        className="w-full bg-[#dbeafe] hover:bg-blue-100 text-[#1e40af] font-semibold text-center py-2 px-3 rounded-lg border border-blue-300 shadow-xs transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
+        className="w-full bg-emerald-50/90 hover:bg-emerald-100/90 text-emerald-900 font-semibold text-center py-2 px-3 rounded-lg border border-emerald-300 shadow-xs transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
         title="Klik untuk mengubah shift kerja"
       >
-        <Clock className="w-4 h-4 text-blue-600" />
+        <Clock className="w-4 h-4 text-emerald-700" />
         <span>{currentShift}</span>
         <ChevronDown className="w-3.5 h-3.5 opacity-70" />
       </button>
@@ -219,10 +219,10 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
         <div className="border-b border-slate-100 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-slate-800 text-sm sm:text-base">
-              <Layers className="w-4 h-4 text-blue-600" />
+              <Layers className="w-4 h-4 text-emerald-600" />
               <span>Kegiatan Hari Ini</span>
             </div>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
               {activities.length} Kegiatan
             </span>
           </div>
@@ -238,7 +238,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
               <p className="text-sm text-slate-500">Belum ada kegiatan untuk tanggal ini.</p>
               <button
                 onClick={handleAddActivity}
-                className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+                className="mt-2 text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline inline-flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Tambah Kegiatan Sekarang
               </button>
@@ -263,7 +263,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                       <select
                         value={item.startHour}
                         onChange={(e) => handleUpdateActivity(index, 'startHour', e.target.value)}
-                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-2xs"
                       >
                         {HOURS.map((h) => (
                           <option key={h} value={h}>{h}</option>
@@ -273,7 +273,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                       <select
                         value={item.startMinute}
                         onChange={(e) => handleUpdateActivity(index, 'startMinute', e.target.value)}
-                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-2xs"
                       >
                         {MINUTES_STEP_5.map((m) => (
                           <option key={m} value={m}>{m}</option>
@@ -287,7 +287,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                       <select
                         value={item.endHour}
                         onChange={(e) => handleUpdateActivity(index, 'endHour', e.target.value)}
-                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-2xs"
                       >
                         {HOURS.map((h) => (
                           <option key={h} value={h}>{h}</option>
@@ -297,7 +297,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                       <select
                         value={item.endMinute}
                         onChange={(e) => handleUpdateActivity(index, 'endMinute', e.target.value)}
-                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                        className="bg-white border border-slate-300 rounded px-1.5 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-2xs"
                       >
                         {MINUTES_STEP_5.map((m) => (
                           <option key={m} value={m}>{m}</option>
@@ -323,7 +323,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                     value={item.activity}
                     onChange={(e) => handleUpdateActivity(index, 'activity', e.target.value)}
                     placeholder="Ketik uraian kegiatan kerja..."
-                    className="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y shadow-2xs"
+                    className="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y shadow-2xs"
                   />
                 </div>
 
@@ -357,10 +357,10 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenTemplateModal(index)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-md border border-blue-200 transition-colors cursor-pointer"
-                      title="Pilih narasi kegiatan & indikator dari template"
+                      className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-md border border-emerald-200 transition-colors cursor-pointer"
+                      title="Pilih narasi kegiatan dari pustaka template"
                     >
-                      <Sparkles className="w-3 h-3 text-blue-600" />
+                      <Sparkles className="w-3 h-3 text-emerald-600" />
                       <span>Template</span>
                     </button>
                   </div>
@@ -392,7 +392,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                     value={item.notes}
                     onChange={(e) => handleUpdateActivity(index, 'notes', e.target.value)}
                     placeholder="Keterangan / Bukti Dukung (misal: Buku piket, Modul Ajar, LKPD, Leger Nilai)..."
-                    className="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                    className="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-2xs"
                   />
                 </div>
               </div>
@@ -406,7 +406,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
             id="btn-add-activity-row"
             type="button"
             onClick={handleAddActivity}
-            className="flex-1 py-2.5 border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/50 text-slate-700 hover:text-blue-700 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+            className="flex-1 py-2.5 border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 hover:text-emerald-800 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
           >
             <Plus className="w-4 h-4" />
             <span>+ Tambah Baris Baru</span>

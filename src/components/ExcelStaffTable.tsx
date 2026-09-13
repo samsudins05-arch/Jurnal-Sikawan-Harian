@@ -319,7 +319,7 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
           <button
             type="button"
             onClick={() => setIsAddFormOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold rounded-lg shadow-xs transition-colors cursor-pointer"
             title="Tambah data guru/pegawai secara manual ke Master Data"
           >
             <UserPlus className="w-3.5 h-3.5" />
@@ -636,7 +636,7 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white rounded-lg font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
                   <Check className="w-3.5 h-3.5" />
                   <span>Simpan Guru ke Master Data</span>

@@ -43,7 +43,7 @@ export const NavbarTabs: React.FC<NavbarTabsProps> = ({ activeTab, setActiveTab 
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-all border-b-2 cursor-pointer ${
                   isActive
-                    ? 'border-blue-600 text-blue-700 bg-blue-50/50'
+                    ? 'border-emerald-600 text-emerald-900 bg-emerald-50/60 font-bold'
                     : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >

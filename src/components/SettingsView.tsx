@@ -183,7 +183,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-blue-600" />
+            <Building2 className="w-5 h-5 text-emerald-700" />
             <span>Pengaturan Dokumen &amp; Profil Pegawai</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -195,7 +195,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           id="btn-save-settings-cloud"
           onClick={handleSaveWithFeedback}
           disabled={isSaving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-70"
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-70"
         >
           {isSaving ? (
             <>
@@ -232,7 +232,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600" />
+              <User className="w-4 h-4 text-emerald-700" />
               <span>1. Data Pegawai / Guru</span>
             </h3>
           </div>
@@ -942,14 +942,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* Bottom Sticky / Prominent Save Bar */}
-      <div className="bg-gradient-to-r from-blue-900 to-indigo-950 rounded-2xl p-4 sm:p-5 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl border border-blue-800/60">
+      <div className="bg-gradient-to-r from-emerald-900 via-emerald-950 to-slate-950 rounded-2xl p-4 sm:p-5 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl border border-emerald-700/50">
         <div className="flex items-center gap-3 text-center sm:text-left">
-          <div className="p-2.5 bg-blue-600/30 rounded-xl border border-blue-400/30 shrink-0 hidden sm:block">
-            <Save className="w-6 h-6 text-blue-300" />
+          <div className="p-2.5 bg-emerald-700/40 rounded-xl border border-emerald-500/30 shrink-0 hidden sm:block">
+            <Save className="w-6 h-6 text-emerald-300" />
           </div>
           <div>
             <h4 className="font-bold text-sm sm:text-base text-white">Simpan Seluruh Konfigurasi Dokumen</h4>
-            <p className="text-xs text-blue-200">
+            <p className="text-xs text-emerald-200">
               Perubahan pada Data Guru, Kepala Sekolah, Tanda Tangan, dan Kop Surat akan diterapkan ke seluruh Jurnal.
             </p>
           </div>
@@ -958,7 +958,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <button
           onClick={handleSaveWithFeedback}
           disabled={isSaving}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg transition-all cursor-pointer disabled:opacity-70 shrink-0"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-emerald-900/40 transition-all cursor-pointer disabled:opacity-70 shrink-0"
         >
           {isSaving ? (
             <>

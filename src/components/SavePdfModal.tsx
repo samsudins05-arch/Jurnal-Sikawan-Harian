@@ -161,7 +161,7 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden text-slate-800 animate-in zoom-in-95 duration-150">
         {/* Header Modal */}
-        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-4 sm:p-5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white p-4 sm:p-5 flex items-center justify-between border-b border-emerald-700/40">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5 text-white" />
@@ -170,7 +170,7 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
               <h3 className="font-bold text-base sm:text-lg leading-tight">
                 Simpan Lembar Kerja (PDF)
               </h3>
-              <p className="text-xs text-blue-100 mt-0.5">
+              <p className="text-xs text-emerald-100 mt-0.5">
                 Simpan &amp; Unduh dokumen Jurnal ke Komputer atau Android
               </p>
             </div>
@@ -190,17 +190,17 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 text-xs">
             <div className="flex items-center justify-between text-slate-600 border-b border-slate-200 pb-2">
               <span className="font-semibold text-slate-800">Ringkasan Dokumen:</span>
-              <span className="font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200 font-semibold">
+              <span className="font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-semibold">
                 Kertas F4 Potrait (210 x 330 mm)
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
               <div className="flex items-center gap-2">
-                <Calendar className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <Calendar className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 <span className="truncate">{formatDateDisplay(selectedDate)}</span>
               </div>
               <div className="flex items-center gap-2">
-                <User className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <User className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 <span className="truncate font-medium">{profile.name || 'Belum ada nama'}</span>
               </div>
             </div>
@@ -314,16 +314,16 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
               type="button"
               onClick={handleSystemPrintDialog}
               disabled={isProcessing}
-              className="w-full group text-left p-3.5 rounded-xl border border-slate-300 hover:border-blue-500 bg-white hover:bg-blue-50/40 transition-all flex items-center justify-between gap-3 cursor-pointer shadow-xs"
+              className="w-full group text-left p-3.5 rounded-xl border border-slate-300 hover:border-emerald-500 bg-white hover:bg-emerald-50/40 transition-all flex items-center justify-between gap-3 cursor-pointer shadow-xs"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
                   <Printer className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-slate-800 group-hover:text-blue-700 flex items-center gap-1.5">
+                  <h4 className="font-bold text-sm text-slate-800 group-hover:text-emerald-800 flex items-center gap-1.5">
                     <span>{isMobileDevice ? '3.' : '2.'} Dialog Cetak / Simpan PDF Sistem</span>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-medium">
+                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
                       Pilih Folder
                     </span>
                   </h4>
@@ -332,7 +332,7 @@ export const SavePdfModal: React.FC<SavePdfModalProps> = ({
                   </p>
                 </div>
               </div>
-              <Printer className="w-4 h-4 text-blue-600 shrink-0" />
+              <Printer className="w-4 h-4 text-emerald-700 shrink-0" />
             </button>
           </div>
 

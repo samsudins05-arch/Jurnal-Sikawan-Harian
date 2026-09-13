@@ -1,6 +1,8 @@
 import React from 'react';
 import { Download, Cloud, CloudOff, RefreshCw, UserCheck, LogIn, Phone, ExternalLink, HardDrive } from 'lucide-react';
-import sikawanLogoImg from '../assets/images/sikawan_logo_1788023332948.jpg';
+
+const APP_LOGO_URL = 'https://i.ibb.co.com/zWdzNGqj/logo-bakot-01.png';
+const APP_LOGO_FALLBACK = 'https://i.ibb.co/zWdzNGqj/logo-bakot-01.png';
 
 interface HeaderProps {
   onExportPdf: () => void;
@@ -22,38 +24,45 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveViewMobile,
 }) => {
   return (
-    <header className="bg-[#1b4db3] text-white shadow-lg sticky top-0 z-40">
+    <header className="bg-gradient-to-r from-[#022c22] via-[#064e3b] to-[#043e2f] text-white shadow-xl shadow-emerald-950/20 border-b-2 border-emerald-500/30 sticky top-0 z-40">
       {/* Top Banner Row matching reference screenshot */}
       <div className="max-w-[1700px] mx-auto px-3 sm:px-6 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Left Side: SIJUNAWAN Logo and Title */}
         <div className="flex items-center gap-3.5">
-          {/* Logo Badge */}
+          {/* Logo Full tanpa bulatan */}
           <div 
             id="header-app-logo"
-            className="w-13 h-13 sm:w-14 sm:h-14 bg-white/95 rounded-2xl p-0.5 shadow-md shrink-0 flex items-center justify-center border-2 border-amber-300/80 overflow-hidden hover:scale-105 transition-transform"
+            className="shrink-0 flex items-center justify-center"
           >
             <img 
-              src={sikawanLogoImg} 
+              src={APP_LOGO_URL} 
               alt="Logo Informasi Jurnal Sikawan Harian" 
-              className="w-full h-full object-contain drop-shadow-xs"
+              className="h-13 sm:h-15 w-auto max-w-[90px] sm:max-w-[120px] object-contain drop-shadow-md hover:scale-105 transition-transform"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedFallback) {
+                  target.dataset.triedFallback = 'true';
+                  target.src = APP_LOGO_FALLBACK;
+                }
+              }}
             />
           </div>
 
           {/* Title & Subtitle */}
           <div>
-            <h1 className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-white leading-tight">
-              Informasi Jurnal Sikawan Harian
+            <h1 className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-white leading-tight flex items-center gap-2">
+              <span>Informasi Jurnal Sikawan Harian</span>
             </h1>
-            <div className="text-[11px] sm:text-xs text-blue-100 mt-0.5 leading-snug">
+            <div className="text-[11px] sm:text-xs text-emerald-100 mt-0.5 leading-snug">
               <span className="opacity-90">Aplikasi ini dibuat oleh : </span>
-              <span className="font-semibold text-amber-200">SAMSUDIN</span>
+              <span className="font-bold text-amber-300">SAMSUDIN</span>
               <div className="flex items-center gap-2 mt-0.5">
                 <a 
                   href="https://wa.me/628561240622?text=Halo%20Pak%20Samsudin,%20saya%20menggunakan%20aplikasi%20Informasi%20Jurnal%20Sikawan%20Harian" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 font-medium transition-colors underline"
+                  className="inline-flex items-center gap-1 text-emerald-300 hover:text-amber-200 font-medium transition-colors underline"
                   title="Hubungi via WhatsApp"
                 >
                   <Phone className="w-3 h-3" />
@@ -67,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Right Side: Actions & Status */}
         <div className="flex items-center flex-wrap gap-2.5 self-end md:self-auto">
           {/* Firebase Real-time Sync Indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-900/60 border border-blue-400/30 text-[11px]">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/70 border border-emerald-400/30 text-[11px]">
             {syncStatus === 'syncing' ? (
               <>
                 <RefreshCw className="w-3 h-3 text-amber-300 animate-spin" />
@@ -95,30 +104,30 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="btn-auth-user"
             onClick={onOpenAuth}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-800/80 hover:bg-blue-700 text-blue-100 rounded-lg text-xs font-medium border border-blue-400/30 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-800/80 hover:bg-emerald-700 active:bg-emerald-900 text-emerald-50 rounded-lg text-xs font-semibold border border-emerald-400/30 transition-all cursor-pointer shadow-xs"
             title="Kelola Akun & Sinkronisasi"
           >
             {currentUser && !currentUser.isAnonymous ? (
               <>
-                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <UserCheck className="w-3.5 h-3.5 text-emerald-300" />
                 <span className="max-w-[110px] truncate">{currentUser.displayName || currentUser.email || 'Akun'}</span>
               </>
             ) : (
               <>
-                <LogIn className="w-3.5 h-3.5" />
+                <LogIn className="w-3.5 h-3.5 text-amber-300" />
                 <span>Akun Cloud</span>
               </>
             )}
           </button>
 
           {/* Mobile Tab View Toggle (Form vs Preview) */}
-          <div className="flex lg:hidden bg-blue-900/80 p-0.5 rounded-lg border border-blue-400/40 text-xs font-medium">
+          <div className="flex lg:hidden bg-emerald-950/80 p-0.5 rounded-lg border border-emerald-500/40 text-xs font-medium">
             <button
               onClick={() => setActiveViewMobile('form')}
               className={`px-2.5 py-1 rounded-md transition-all ${
                 activeViewMobile === 'form' 
-                  ? 'bg-white text-blue-900 shadow-xs font-semibold' 
-                  : 'text-blue-100 hover:text-white'
+                  ? 'bg-white text-emerald-950 shadow-xs font-bold' 
+                  : 'text-emerald-100 hover:text-white'
               }`}
             >
               Form
@@ -127,8 +136,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setActiveViewMobile('preview')}
               className={`px-2.5 py-1 rounded-md transition-all ${
                 activeViewMobile === 'preview' 
-                  ? 'bg-white text-blue-900 shadow-xs font-semibold' 
-                  : 'text-blue-100 hover:text-white'
+                  ? 'bg-white text-emerald-950 shadow-xs font-bold' 
+                  : 'text-emerald-100 hover:text-white'
               }`}
             >
               Lihat PDF
@@ -140,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({
             id="btn-export-pdf-header"
             onClick={onExportPdf}
             disabled={isExporting}
-            className="bg-[#dc2626] hover:bg-[#b91c1c] active:bg-[#991b1b] text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm disabled:opacity-75 cursor-pointer"
+            className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 active:from-red-700 active:to-rose-800 text-white font-bold px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm disabled:opacity-75 cursor-pointer border border-red-400/30"
           >
             {isExporting ? (
               <>

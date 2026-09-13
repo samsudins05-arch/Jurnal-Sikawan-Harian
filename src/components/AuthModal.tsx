@@ -127,9 +127,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Realtime Multi-Device Explanation Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800 space-y-1">
-          <div className="font-bold flex items-center gap-1.5 text-blue-900">
-            <Smartphone className="w-4 h-4 text-blue-600" />
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 space-y-1">
+          <div className="font-bold flex items-center gap-1.5 text-emerald-900">
+            <Smartphone className="w-4 h-4 text-emerald-700" />
             <span>Sinkronisasi Real-Time Multi-Device</span>
           </div>
           <p className="text-[11px] leading-relaxed">
@@ -244,7 +244,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
               >
                 {isRegisterMode ? (
                   <>
@@ -268,7 +268,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setErrorMessage('');
                   setSuccessMessage('');
                 }}
-                className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-semibold"
+                className="text-xs text-emerald-700 hover:text-emerald-900 hover:underline font-semibold"
               >
                 {isRegisterMode
                   ? 'Sudah punya akun? Masuk di sini'

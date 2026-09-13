@@ -34,7 +34,7 @@ export const ShiftModal: React.FC<ShiftModalProps> = ({
       <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-200">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 text-slate-800 font-bold text-base">
-            <Clock className="w-5 h-5 text-blue-600" />
+            <Clock className="w-5 h-5 text-emerald-700" />
             <span>Pilih Shift Kerja Guru / Pegawai</span>
           </div>
           <button
@@ -62,12 +62,12 @@ export const ShiftModal: React.FC<ShiftModalProps> = ({
                 }}
                 className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                   isSelected
-                    ? 'border-blue-600 bg-blue-50/80 text-blue-900 font-semibold'
+                    ? 'border-emerald-600 bg-emerald-50/80 text-emerald-950 font-semibold'
                     : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500'}`}>
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
@@ -77,7 +77,7 @@ export const ShiftModal: React.FC<ShiftModalProps> = ({
                 </div>
 
                 {isSelected && (
-                  <Check className="w-4 h-4 text-blue-600" />
+                  <Check className="w-4 h-4 text-emerald-700" />
                 )}
               </button>
             );
@@ -89,7 +89,7 @@ export const ShiftModal: React.FC<ShiftModalProps> = ({
           {!showCustomInput ? (
             <button
               onClick={() => setShowCustomInput(true)}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" /> Buat Shift Kustom Lainnya
             </button>
@@ -104,11 +104,11 @@ export const ShiftModal: React.FC<ShiftModalProps> = ({
                   value={customShiftText}
                   onChange={(e) => setCustomShiftText(e.target.value)}
                   placeholder="Guru : Shift Sore (13.00 - 18.00)"
-                  className="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 />
                 <button
                   onClick={handleAddCustomShift}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                  className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                 >
                   Terapkan
                 </button>

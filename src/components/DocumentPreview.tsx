@@ -36,10 +36,10 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-            <FileCheck className="w-4 h-4 text-blue-600" />
+            <FileCheck className="w-4 h-4 text-emerald-600" />
             <span>Pratinjau Lembar Kerja F4</span>
           </span>
-          <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-semibold">
+          <span className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-semibold">
             210 x 330 mm (Folio)
           </span>
         </div>

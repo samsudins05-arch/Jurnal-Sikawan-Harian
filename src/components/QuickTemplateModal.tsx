@@ -94,7 +94,7 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
             }}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               mainTab === 'guru'
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-emerald-700 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
@@ -109,7 +109,7 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
             }}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               mainTab === 'tendik'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-teal-700 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
@@ -150,8 +150,8 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     safeCategoryIdx === idx
                       ? mainTab === 'guru'
-                        ? 'bg-blue-600 text-white shadow-2xs'
-                        : 'bg-emerald-600 text-white shadow-2xs'
+                        ? 'bg-emerald-700 text-white shadow-2xs'
+                        : 'bg-teal-700 text-white shadow-2xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
                   }`}
                 >
@@ -167,22 +167,22 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => handleUseItem(item, false)}
-                  className="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/60 hover:shadow-xs transition-all space-y-1.5 group bg-white cursor-pointer active:scale-[0.99]"
+                  className="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/60 hover:shadow-xs transition-all space-y-1.5 group bg-white cursor-pointer active:scale-[0.99]"
                   title="Klik untuk memilih kegiatan ini"
                 >
                   {/* Row Top: Role badge & hover indicator */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="px-2 py-0.5 rounded bg-blue-50 group-hover:bg-blue-100 text-blue-700 font-semibold text-[10px]">
+                    <span className="px-2 py-0.5 rounded bg-emerald-50 group-hover:bg-emerald-100 text-emerald-800 font-semibold text-[10px] border border-emerald-200/60">
                       {item.role || (mainTab === 'guru' ? 'Guru' : 'Tendik')}
                     </span>
-                    <span className="text-[11px] text-blue-600 font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                    <span className="text-[11px] text-emerald-700 font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                       <span>Pilih kegiatan</span>
                       <span>&rarr;</span>
                     </span>
                   </div>
 
                   {/* Uraian Kegiatan */}
-                  <div className="text-xs sm:text-sm font-medium text-slate-800 group-hover:text-blue-950 leading-relaxed">
+                  <div className="text-xs sm:text-sm font-medium text-slate-800 group-hover:text-emerald-950 leading-relaxed">
                     {item.text}
                   </div>
 
@@ -207,10 +207,10 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {/* Card Paket 6 Guru */}
-              <div className="border-2 border-blue-200 hover:border-blue-500 rounded-xl p-4 bg-gradient-to-b from-blue-50/40 to-white flex flex-col justify-between space-y-3 transition-all shadow-xs">
+              <div className="border-2 border-emerald-200 hover:border-emerald-500 rounded-xl p-4 bg-gradient-to-b from-emerald-50/40 to-white flex flex-col justify-between space-y-3 transition-all shadow-xs">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-700">
+                    <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800">
                       GURU KELAS / MAPEL
                     </span>
                     <span className="text-[11px] text-slate-500 font-mono">
@@ -228,7 +228,7 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
                   <div className="bg-white/80 rounded-lg p-2.5 border border-slate-200/80 space-y-1.5 text-[11px]">
                     {SIX_ACTIVITIES_GURU.map((act, i) => (
                       <div key={act.id || i} className="flex items-start gap-1.5 text-slate-700">
-                        <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                           {i + 1}
                         </span>
                         <div className="min-w-0">
@@ -246,7 +246,7 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleApplyPackage(SIX_ACTIVITIES_GURU, 'Guru : Shift Pagi (06.30 - 15.00)')}
-                    className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="w-full py-2 px-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Check className="w-4 h-4" />
                     <span>Terapkan 6 Kegiatan Guru ke Jurnal</span>
