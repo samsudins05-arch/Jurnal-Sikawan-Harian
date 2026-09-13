@@ -33,6 +33,9 @@ export async function renderElementToJsPdf(
         const clonedElement = clonedDoc.getElementById(elementId);
         if (clonedElement) {
           clonedElement.style.transform = 'none';
+          clonedElement.style.position = 'relative';
+          clonedElement.style.top = 'auto';
+          clonedElement.style.left = 'auto';
           clonedElement.style.margin = '0 auto';
           clonedElement.style.boxShadow = 'none';
           clonedElement.style.paddingTop = '1.2cm';

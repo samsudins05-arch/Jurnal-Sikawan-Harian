@@ -140,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'text-emerald-100 hover:text-white'
               }`}
             >
-              Lihat PDF
+              Lembar Kerja
             </button>
           </div>
 
