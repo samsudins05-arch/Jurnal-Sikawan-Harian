@@ -3,18 +3,19 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // User profile documents
     match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if true;
     }
-    // Journals collection
+    // Journals collection - allows teachers & staff to sync daily journals
     match /journals/{journalId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if true;
     }
-    // Global or school settings
+    // Global or school settings & master staff data
     match /settings/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if true;
+    }
+    // Test collection for connection verification
+    match /test/{docId} {
+      allow read, write: if true;
     }
   }
 }

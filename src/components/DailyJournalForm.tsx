@@ -7,13 +7,17 @@ import {
   Camera, 
   Sparkles, 
   ChevronLeft, 
-  ChevronRight,
-  Image as ImageIcon,
-  X,
-  Layers,
-  ChevronDown
+  ChevronRight, 
+  Image as ImageIcon, 
+  X, 
+  Layers, 
+  ChevronDown, 
+  Target,
+  Download,
+  RefreshCw,
+  Save
 } from 'lucide-react';
-import { ActivityItem, ShiftConfig } from '../types/journal';
+import { ActivityItem, ShiftConfig, UserProfile } from '../types/journal';
 import { HOURS, MINUTES_STEP_5, formatSlashDate, parseDateStrToIndonesian } from '../utils/dateFormat';
 
 interface DailyJournalFormProps {
@@ -24,6 +28,13 @@ interface DailyJournalFormProps {
   activities: ActivityItem[];
   setActivities: React.Dispatch<React.SetStateAction<ActivityItem[]>>;
   onOpenTemplateModal: (targetIndex: number) => void;
+  profile?: UserProfile;
+  staffList?: Partial<UserProfile>[];
+  onSelectStaff?: (staff: Partial<UserProfile>) => void;
+  onApplyFullDayPackage?: (activities: ActivityItem[], shiftTitle?: string) => void;
+  onSaveJournal?: () => void;
+  onExportPdf?: () => void;
+  isExporting?: boolean;
 }
 
 export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
@@ -34,6 +45,13 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
   activities,
   setActivities,
   onOpenTemplateModal,
+  profile,
+  staffList,
+  onSelectStaff,
+  onApplyFullDayPackage,
+  onSaveJournal,
+  onExportPdf,
+  isExporting,
 }) => {
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
@@ -201,7 +219,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
 
       {/* 3. Box "Kegiatan Hari Ini" matching screenshot */}
       <div className="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs space-y-4">
-        <div>
+        <div className="border-b border-slate-100 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-slate-800 text-sm sm:text-base">
               <Layers className="w-4 h-4 text-blue-600" />
@@ -212,7 +230,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
             </span>
           </div>
           <p className="text-[11px] text-slate-500 italic mt-0.5">
-            *Atur Jam Mulai &amp; Selesai.
+            *Atur Jam Mulai &amp; Selesai dan Uraian Kegiatan masing-masing.
           </p>
         </div>
 
@@ -238,6 +256,10 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                 {/* Time picker row with delete button */}
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-slate-700">
+                    <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">
+                      {index + 1}
+                    </span>
+
                     {/* Mulai */}
                     <div className="flex items-center gap-1">
                       <span className="text-slate-600">Mulai:</span>
@@ -303,8 +325,20 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                     rows={2}
                     value={item.activity}
                     onChange={(e) => handleUpdateActivity(index, 'activity', e.target.value)}
-                    placeholder="Ketik kegiatan..."
+                    placeholder="Ketik uraian kegiatan kerja..."
                     className="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y shadow-2xs"
+                  />
+                </div>
+
+                {/* Indikator Kinerja / Capaian Output */}
+                <div className="flex items-center gap-2 bg-emerald-50/70 border border-emerald-200/90 rounded-lg px-2.5 py-1.5 shadow-2xs">
+                  <Target className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <input
+                    type="text"
+                    value={item.indicator || ''}
+                    onChange={(e) => handleUpdateActivity(index, 'indicator', e.target.value)}
+                    placeholder="Indikator Kinerja / Capaian Output (misal: Terlaksananya pembiasaan 5S dan KBM aktif)..."
+                    className="w-full bg-transparent text-xs text-emerald-950 placeholder-emerald-600/70 focus:outline-none font-medium"
                   />
                 </div>
 
@@ -338,8 +372,8 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenTemplateModal(index)}
-                      className="flex items-center gap-1 px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-medium rounded-md border border-blue-200 transition-colors cursor-pointer"
-                      title="Pilih narasi kegiatan otomatis dari template guru"
+                      className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-md border border-blue-200 transition-colors cursor-pointer"
+                      title="Pilih narasi kegiatan & indikator dari template"
                     >
                       <Sparkles className="w-3 h-3 text-blue-600" />
                       <span>Template</span>
@@ -372,7 +406,7 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
                     type="text"
                     value={item.notes}
                     onChange={(e) => handleUpdateActivity(index, 'notes', e.target.value)}
-                    placeholder="Isikan Keterangan Tambahan..."
+                    placeholder="Keterangan / Bukti Dukung (misal: Buku piket, Modul Ajar, LKPD, Leger Nilai)..."
                     className="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs"
                   />
                 </div>
@@ -381,16 +415,53 @@ export const DailyJournalForm: React.FC<DailyJournalFormProps> = ({
           )}
         </div>
 
-        {/* "+ Tambah Baris Baru" button matching screenshot */}
-        <button
-          id="btn-add-activity-row"
-          type="button"
-          onClick={handleAddActivity}
-          className="w-full py-2.5 border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/50 text-slate-700 hover:text-blue-700 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Tambah Baris Baru</span>
-        </button>
+        {/* Action buttons: + Tambah Baris Baru, Simpan Jurnal, and Simpan PDF & Rekap */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
+          <button
+            id="btn-add-activity-row"
+            type="button"
+            onClick={handleAddActivity}
+            className="flex-1 py-2.5 border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/50 text-slate-700 hover:text-blue-700 font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Tambah Baris Baru</span>
+          </button>
+
+          {onSaveJournal && (
+            <button
+              id="btn-save-journal-manual"
+              type="button"
+              onClick={onSaveJournal}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs hover:shadow"
+              title="Simpan perubahan jurnal ke penyimpanan lokal & cloud"
+            >
+              <Save className="w-4 h-4" />
+              <span>Simpan Jurnal</span>
+            </button>
+          )}
+
+          {onExportPdf && (
+            <button
+              id="btn-save-pdf-form"
+              type="button"
+              onClick={onExportPdf}
+              disabled={isExporting}
+              className="px-5 py-2.5 bg-[#dc2626] hover:bg-[#b91c1c] active:bg-[#991b1b] text-white font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-lg disabled:opacity-75"
+            >
+              {isExporting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Memproses PDF...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 stroke-[2.5]" />
+                  <span>Simpan PDF &amp; Rekap</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Footer credit text matching screenshot */}

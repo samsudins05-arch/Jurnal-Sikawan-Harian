@@ -65,39 +65,106 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
     return 1;
   });
 
-  // 1. Resolve Effective Master Data Staff List
+  // 1. Resolve Effective Staff List ("Data Pegawai")
+  // Automatically combines:
+  // - Master staff list from School Master Data / Excel (prop `staffList`)
+  // - All unique teachers detected from saved journals in Firestore (so any teacher saving on any device appears automatically)
+  // - Active user's profile if filled
   const effectiveStaffList: Partial<UserProfile>[] = useMemo(() => {
+    const list: Partial<UserProfile>[] = [];
+    const seenKeys = new Set<string>();
+
+    const makeKey = (name?: string, nip?: string) => {
+      const cleanDigits = (nip || '').replace(/[^0-9]/g, '');
+      if (cleanDigits.length >= 6) return `nip_${cleanDigits}`;
+      const cleanName = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      return `name_${cleanName}`;
+    };
+
+    const addTeacher = (teacher: Partial<UserProfile>) => {
+      const name = (teacher.name || '').trim();
+      const nip = (teacher.nip || '').trim();
+      if (!name && !nip) return;
+      const key = makeKey(name, nip);
+      if (key && !seenKeys.has(key)) {
+        seenKeys.add(key);
+        list.push({
+          name: name || 'Guru / Pegawai',
+          nip: nip || '-',
+          position: teacher.position || 'Guru / Tenaga Kependidikan',
+          unitWork: teacher.unitWork || schoolSettings.subUnitName || 'SDN Babelan Kota 01',
+          rankGrade: teacher.rankGrade || '-',
+          employeeStatus: teacher.employeeStatus || (nip && nip !== '-' ? 'PNS' : 'Non-PNS / Tendik'),
+          schoolHeadName: teacher.schoolHeadName || schoolSettings.headmasterName || '',
+          schoolHeadNip: teacher.schoolHeadNip || schoolSettings.headmasterNip || '',
+          cityLocation: teacher.cityLocation || schoolSettings.cityLocation || 'Bekasi',
+        });
+      }
+    };
+
+    // A. Master staffList from Settings / Excel
     if (staffList && staffList.length > 0) {
-      return staffList;
+      staffList.forEach((st) => {
+        const isLegacyDummy = st.nip === '198506152010011025' && staffList.length === 7;
+        if (!isLegacyDummy) addTeacher(st);
+      });
     }
-    const saved = localStorage.getItem('sijunawan_staff_list');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) {}
+
+    // B. Local storage backup if empty
+    if (list.length === 0) {
+      const saved = localStorage.getItem('sijunawan_staff_list');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((st) => {
+              const isLegacyDummy = st.nip === '198506152010011025' && parsed.length === 7;
+              if (!isLegacyDummy) addTeacher(st);
+            });
+          }
+        } catch (e) {}
+      }
     }
-    // If active profile has name, use it; otherwise fallback to default staff list
+
+    // C. Automatically include ALL teachers who have filled journals or saved PDFs across ANY device!
+    if (journals && journals.length > 0) {
+      journals.forEach((j) => {
+        const tName = j.teacherName || j.profileSnapshot?.name;
+        const tNip = j.teacherNip || j.profileSnapshot?.nip;
+        if (tName || tNip) {
+          addTeacher({
+            name: tName,
+            nip: tNip,
+            position: j.profileSnapshot?.position,
+            unitWork: j.profileSnapshot?.unitWork,
+            rankGrade: j.profileSnapshot?.rankGrade,
+            employeeStatus: j.profileSnapshot?.employeeStatus,
+            schoolHeadName: j.profileSnapshot?.schoolHeadName,
+            schoolHeadNip: j.profileSnapshot?.schoolHeadNip,
+            cityLocation: j.profileSnapshot?.cityLocation,
+          });
+        }
+      });
+    }
+
+    // D. Active profile if valid and not yet in list
     if (profile.name && profile.name.trim() !== '') {
-      return [
-        {
-          name: profile.name,
-          nip: profile.nip,
-          position: profile.position,
-          unitWork: profile.unitWork,
-          rankGrade: profile.rankGrade,
-          employeeStatus: profile.employeeStatus,
-          schoolHeadName: profile.schoolHeadName,
-          schoolHeadNip: profile.schoolHeadNip,
-          cityLocation: profile.cityLocation,
-        },
-        ...DEFAULT_STAFF_LIST.filter(
-          (s) => (s.name || '').trim().toLowerCase() !== (profile.name || '').trim().toLowerCase()
-        ),
-      ];
+      addTeacher({
+        name: profile.name,
+        nip: profile.nip,
+        position: profile.position,
+        unitWork: profile.unitWork,
+        rankGrade: profile.rankGrade,
+        employeeStatus: profile.employeeStatus,
+        schoolHeadName: profile.schoolHeadName,
+        schoolHeadNip: profile.schoolHeadNip,
+        cityLocation: profile.cityLocation,
+      });
     }
-    return DEFAULT_STAFF_LIST;
-  }, [staffList, profile]);
+
+    // Sort alphabetically by teacher name for clean matrix layout
+    return list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }, [staffList, journals, profile, schoolSettings]);
 
   // Days in selected month
   const daysInMonth = useMemo(() => {
@@ -141,25 +208,38 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
     hasActivities: boolean;
     isPdfSaved: boolean;
   } => {
-    const tName = (teacher.name || '').trim().toLowerCase();
-    const tNip = (teacher.nip || '').trim().replace(/[^0-9]/g, '');
+    const tName = (teacher.name || '').trim();
+    const tNip = (teacher.nip || '').trim();
+    const tNipClean = tNip.replace(/[^0-9]/g, '');
+    const tNameClean = tName.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    const match = journals.find((j) => {
+    // Search ALL matching journals for this teacher and dateStr
+    const matches = journals.filter((j) => {
       if (j.dateStr !== dateStr) return false;
 
-      const jNip = (j.teacherNip || j.profileSnapshot?.nip || '').trim().replace(/[^0-9]/g, '');
-      if (tNip && jNip && tNip === jNip) return true;
-
-      const jName = (j.teacherName || j.profileSnapshot?.name || '').trim().toLowerCase();
-      if (tName && jName) {
-        if (tName === jName || jName.includes(tName) || tName.includes(jName)) return true;
+      const jNip = (j.teacherNip || j.profileSnapshot?.nip || '').trim();
+      const jNipClean = jNip.replace(/[^0-9]/g, '');
+      if (tNipClean.length >= 6 && jNipClean.length >= 6 && tNipClean === jNipClean) {
+        return true;
       }
 
-      // If journal lacks teacher metadata, check against current profile if this teacher matches current profile
-      if (!jName && !jNip) {
-        const curName = (profile.name || '').trim().toLowerCase();
-        const curNip = (profile.nip || '').trim().replace(/[^0-9]/g, '');
-        if ((tNip && curNip && tNip === curNip) || (tName && curName && tName === curName)) {
+      const jName = (j.teacherName || j.profileSnapshot?.name || '').trim();
+      const jNameClean = jName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (tNameClean && jNameClean) {
+        if (
+          tNameClean === jNameClean ||
+          tNameClean.includes(jNameClean) ||
+          jNameClean.includes(tNameClean)
+        ) {
+          return true;
+        }
+      }
+
+      // If journal lacks metadata, match against current active user profile if this teacher matches current profile
+      if (!jNameClean && !jNipClean) {
+        const curNip = (profile.nip || '').replace(/[^0-9]/g, '');
+        const curName = (profile.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if ((tNipClean && curNip && tNipClean === curNip) || (tNameClean && curName && tNameClean === curName)) {
           return true;
         }
       }
@@ -167,7 +247,7 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
       return false;
     });
 
-    if (!match) {
+    if (matches.length === 0) {
       return {
         isFilled: false,
         journal: null,
@@ -177,12 +257,26 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
       };
     }
 
-    const validActs = (match.activities || []).filter(
+    // Pick best match: prioritize isPdfSaved = true, then most valid activities, then newest timestamp
+    const bestMatch = matches.sort((a, b) => {
+      const aSaved = Boolean(a.isPdfSaved);
+      const bSaved = Boolean(b.isPdfSaved);
+      if (aSaved && !bSaved) return -1;
+      if (!aSaved && bSaved) return 1;
+
+      const aActs = (a.activities || []).filter((x) => x.activity && x.activity.trim() !== '' && x.activity.trim() !== '-').length;
+      const bActs = (b.activities || []).filter((x) => x.activity && x.activity.trim() !== '' && x.activity.trim() !== '-').length;
+      if (aActs !== bActs) return bActs - aActs;
+
+      return (b.updatedAt || 0) - (a.updatedAt || 0);
+    })[0];
+
+    const validActs = (bestMatch.activities || []).filter(
       (a) => a.activity && a.activity.trim() !== '' && a.activity.trim() !== '-'
     );
 
     const hasActivities = validActs.length > 0;
-    const isPdfSaved = Boolean(match.isPdfSaved);
+    const isPdfSaved = Boolean(bestMatch.isPdfSaved);
 
     // KOTAK PADA MATRIKS HANYA BERWARNA HIJAU KETIKA:
     // 1. Guru telah mengisi Jurnal Harian (hasActivities = true)
@@ -192,7 +286,7 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
 
     return {
       isFilled: isCompletedAndPdfSaved,
-      journal: match,
+      journal: bestMatch,
       activitiesCount: validActs.length,
       hasActivities,
       isPdfSaved,
@@ -374,7 +468,7 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
                 Rekapitulasi Jurnal Bulanan
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
-                Master Data Pegawai
+                Data Pegawai
               </span>
             </div>
           </div>
@@ -446,7 +540,7 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
             <span className="text-xs font-normal text-slate-500">Orang</span>
           </div>
           <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-            <span>Tabel Master Data Pegawai</span>
+            <span>Data Pegawai</span>
           </div>
         </div>
 
@@ -559,7 +653,7 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
             onClick={onOpenMasterData}
             className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 hover:underline font-semibold cursor-pointer self-start md:self-auto shrink-0"
           >
-            <span>Tabel Master Data Pegawai</span>
+            <span>Data Pegawai</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         )}
@@ -569,7 +663,7 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
       <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-4 py-2.5 flex items-center gap-2.5 text-xs text-slate-600">
         <Lock className="w-4 h-4 text-slate-500 shrink-0" />
         <div>
-          <strong className="text-slate-800">Matriks Terkunci (Hanya Baca):</strong> Kotak tanggal pada matriks hanya dapat berubah menjadi <strong>Hijau</strong> ketika Guru telah mengisi kegiatan pada <strong>Jurnal Harian</strong> dan mengklik tombol <strong>Simpan PDF</strong>. Ketika guru belum mengisi Jurnal dan Simpan PDF, warna kotak tidak berubah (tetap merah muda).
+          <strong className="text-slate-800">Matriks Keterisian Real-Time:</strong> Kotak tanggal pada matriks otomatis berubah menjadi <strong>Hijau</strong> ketika Guru telah mengisi kegiatan dan mengklik tombol <strong>Simpan PDF</strong>. Matriks ini terbaca untuk seluruh guru yang terdaftar pada Data Pegawai. Jika belum mengisi atau belum Simpan PDF, warna kotak tetap merah muda.
         </div>
       </div>
 
@@ -849,8 +943,8 @@ export const MonthlyRecap: React.FC<MonthlyRecapProps> = ({
                 {effectiveStaffList.length === 0 && (
                   <tr>
                     <td colSpan={daysInMonth + 7} className="py-12 text-center text-slate-400">
-                      <p className="font-semibold text-slate-600">Belum ada data di Tabel Master Data Pegawai.</p>
-                      <p className="text-xs mt-1">Buka tab Pengaturan untuk mengimpor atau menambahkan guru.</p>
+                      <p className="font-semibold text-slate-600">Belum ada data di Data Pegawai.</p>
+                      <p className="text-xs mt-1">Buka tab Pengaturan untuk mengimpor data guru dari file Excel.</p>
                     </td>
                   </tr>
                 )}

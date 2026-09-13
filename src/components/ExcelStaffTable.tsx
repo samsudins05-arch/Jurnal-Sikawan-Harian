@@ -18,6 +18,24 @@ import { downloadStaffExcelTemplate, parseStaffExcelFile } from '../utils/excelH
 import { db } from '../lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
+function cleanForFirestore<T extends Record<string, any>>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map((item) => (typeof item === 'object' && item !== null ? cleanForFirestore(item) : item)) as any;
+  }
+  const cleaned: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
+      cleaned[key] = null;
+    } else if (value !== null && typeof value === 'object' && !(value instanceof Date)) {
+      cleaned[key] = cleanForFirestore(value);
+    } else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
 interface ExcelStaffTableProps {
   profile: UserProfile;
   setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
@@ -183,7 +201,6 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
       type: 'success',
       message: `Profil aktif diubah menjadi: ${staff.name || 'Pegawai terpilih'}`,
     });
-    onSaveToCloud();
     setTimeout(() => setImportStatus(null), 4000);
   };
 
@@ -217,10 +234,10 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
     }
     localStorage.setItem('sijunawan_staff_list', JSON.stringify(updatedList));
     try {
-      setDoc(doc(db, 'settings', 'school_master_data'), {
+      setDoc(doc(db, 'settings', 'school_master_data'), cleanForFirestore({
         staffList: updatedList,
         updatedAt: serverTimestamp(),
-      }, { merge: true }).catch(() => {});
+      }), { merge: true }).catch(() => {});
     } catch (e) {}
     setIsAddFormOpen(false);
     setNewStaff({
@@ -252,10 +269,10 @@ export const ExcelStaffTable: React.FC<ExcelStaffTableProps> = ({
       }
       localStorage.setItem('sijunawan_staff_list', JSON.stringify(updatedList));
       try {
-        setDoc(doc(db, 'settings', 'school_master_data'), {
+        setDoc(doc(db, 'settings', 'school_master_data'), cleanForFirestore({
           staffList: updatedList,
           updatedAt: serverTimestamp(),
-        }, { merge: true }).catch(() => {});
+        }), { merge: true }).catch(() => {});
       } catch (e) {}
       setImportStatus({
         type: 'info',

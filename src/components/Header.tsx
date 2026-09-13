@@ -1,11 +1,11 @@
 import React from 'react';
-import { Download, Cloud, CloudOff, RefreshCw, UserCheck, LogIn, Phone, ExternalLink } from 'lucide-react';
+import { Download, Cloud, CloudOff, RefreshCw, UserCheck, LogIn, Phone, ExternalLink, HardDrive } from 'lucide-react';
 import sikawanLogoImg from '../assets/images/sikawan_logo_1788023332948.jpg';
 
 interface HeaderProps {
   onExportPdf: () => void;
   isExporting: boolean;
-  syncStatus: 'synced' | 'syncing' | 'offline';
+  syncStatus: 'synced' | 'syncing' | 'offline' | 'quota-exhausted';
   currentUser: { email?: string | null; displayName?: string | null; isAnonymous?: boolean } | null;
   onOpenAuth: () => void;
   activeViewMobile: 'form' | 'preview';
@@ -76,7 +76,12 @@ export const Header: React.FC<HeaderProps> = ({
             ) : syncStatus === 'synced' ? (
               <>
                 <Cloud className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-200">Firebase Realtime Aktif</span>
+                <span className="text-emerald-200">Firebase Cloud Aktif</span>
+              </>
+            ) : syncStatus === 'quota-exhausted' ? (
+              <>
+                <HardDrive className="w-3.5 h-3.5 text-amber-300" />
+                <span className="text-amber-200" title="Batas kuota harian Firebase tercapai. Data tersimpan aman di browser Anda.">Mode Lokal (Kuota Penuh)</span>
               </>
             ) : (
               <>

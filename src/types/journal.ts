@@ -5,8 +5,32 @@ export interface ActivityItem {
   endHour: string;
   endMinute: string;
   activity: string;
+  indicator?: string; // Indikator Kinerja / Capaian Output
   photoUrl?: string; // base64 or storage url
   notes: string;
+}
+
+export interface ActivityTemplateItem {
+  text: string;
+  indicator: string; // Indikator Kinerja / Capaian Output
+  notes: string; // Keterangan / Bukti Dukung
+  role?: 'Guru' | 'Tendik' | 'Umum';
+  timeRange?: string; // e.g. "06.30 - 07.15"
+}
+
+export interface ActivityTemplateCategory {
+  category: string;
+  role: 'Guru' | 'Tendik' | 'Umum';
+  items: ActivityTemplateItem[];
+}
+
+export interface FullDayTemplatePackage {
+  id: string;
+  title: string;
+  role: 'Guru' | 'Tendik';
+  shift: string;
+  description: string;
+  activities: ActivityItem[];
 }
 
 export interface UserProfile {
@@ -43,7 +67,7 @@ export interface JournalDay {
   teacherName?: string;
   teacherNip?: string;
   isPdfSaved?: boolean; // True only if teacher has filled journal AND clicked Simpan PDF
-  pdfSavedAt?: number;
+  pdfSavedAt?: number | null;
   updatedAt?: number;
 }
 

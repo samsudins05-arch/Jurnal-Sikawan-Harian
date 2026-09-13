@@ -10,6 +10,7 @@ import {
   auth, 
   db, 
   onAuthStateChanged, 
+  signInAnonymously,
   doc, 
   setDoc, 
   getDoc, 
@@ -19,8 +20,10 @@ import {
   onSnapshot, 
   deleteDoc,
   serverTimestamp,
+  getDocFromServer,
   User 
 } from './lib/firebase';
+import { handleFirestoreError, OperationType } from './lib/firebaseErrors';
 import { 
   ActivityItem, 
   UserProfile, 
@@ -49,6 +52,33 @@ import { ShiftModal } from './components/ShiftModal';
 import { QuickTemplateModal } from './components/QuickTemplateModal';
 import { AuthModal } from './components/AuthModal';
 import { SavePdfModal } from './components/SavePdfModal';
+
+// Helper to recursively remove or nullify undefined fields for Firebase Firestore compatibility
+function cleanForFirestore<T extends Record<string, any>>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map((item) => (typeof item === 'object' && item !== null ? cleanForFirestore(item) : item)) as any;
+  }
+  const cleaned: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
+      cleaned[key] = null;
+    } else if (value !== null && typeof value === 'object' && !(value instanceof Date)) {
+      cleaned[key] = cleanForFirestore(value);
+    } else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
+// Generate unique, collision-free slug per teacher
+function getTeacherSlug(nip?: string, name?: string): string {
+  const rawNip = (nip || '').replace(/[^0-9]/g, '').trim();
+  if (rawNip.length >= 6) return rawNip;
+  const rawName = (name || '').trim().replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  return rawName || 'guru';
+}
 
 export default function App() {
   // Current user state from Firebase Auth
@@ -93,16 +123,19 @@ export default function App() {
     return saved ? JSON.parse(saved) : DEFAULT_SCHOOL_SETTINGS;
   });
 
-  // Master Data Staff List (synchronizes with ExcelStaffTable & MonthlyRecap)
+  // Data Pegawai Staff List (synchronizes with ExcelStaffTable & MonthlyRecap)
   const [staffList, setStaffList] = useState<Partial<UserProfile>[]>(() => {
     const saved = localStorage.getItem('sijunawan_staff_list');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const isLegacyDummy = parsed.length === 7 && parsed.some((p: any) => p.nip === '198506152010011025');
+          if (!isLegacyDummy) return parsed;
+        }
       } catch (e) {}
     }
-    return DEFAULT_STAFF_LIST;
+    return [];
   });
 
   const handleSelectStaff = (staff: Partial<UserProfile>) => {
@@ -136,10 +169,26 @@ export default function App() {
     return [];
   });
 
-  // Sync & Export status
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
+  // Sync & Export status with Quota Awareness
+  const [isQuotaExhausted, setIsQuotaExhausted] = useState<boolean>(() => {
+    return localStorage.getItem('sijunawan_quota_exhausted') === 'true';
+  });
+  const [showQuotaBanner, setShowQuotaBanner] = useState<boolean>(() => {
+    return localStorage.getItem('sijunawan_quota_exhausted') === 'true';
+  });
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'quota-exhausted'>(() => {
+    return localStorage.getItem('sijunawan_quota_exhausted') === 'true' ? 'quota-exhausted' : 'synced';
+  });
   const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
   const [isSavingSettings, setIsSavingSettings] = useState<boolean>(false);
+
+  // Mark quota as exhausted and activate local fallback mode
+  const markQuotaExhausted = useCallback(() => {
+    setIsQuotaExhausted(true);
+    setSyncStatus('quota-exhausted');
+    setShowQuotaBanner(true);
+    localStorage.setItem('sijunawan_quota_exhausted', 'true');
+  }, []);
 
   // Toast Notification state
   const [toastMessage, setToastMessage] = useState<{
@@ -163,29 +212,96 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isSavePdfModalOpen, setIsSavePdfModalOpen] = useState<boolean>(false);
 
-  // Refs for debouncing auto-sync
+  // Refs for debouncing auto-sync & dirty checking
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef<boolean>(true);
+  const isCurrentPdfSavedRef = useRef<boolean>(false);
+  const currentPdfSavedAtRef = useRef<number | null>(null);
+  const lastCloudSavedPayloadRef = useRef<string>('');
 
-  // 1. Initialize Firebase Auth
+  // Retry Cloud connection test (to see if daily quota reset)
+  const handleRetryCloud = async () => {
+    try {
+      setSyncStatus('syncing');
+      await getDoc(doc(db, 'settings', 'school_master_data'));
+      setIsQuotaExhausted(false);
+      setShowQuotaBanner(false);
+      localStorage.removeItem('sijunawan_quota_exhausted');
+      setSyncStatus('synced');
+      showNotification('Koneksi Cloud Pulih', 'Kuota Firebase aktif kembali. Sinkronisasi cloud berjalan normal.', 'success');
+    } catch (err: any) {
+      if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+        markQuotaExhausted();
+        showNotification(
+          'Batas Kuota Cloud Masih Berjalan',
+          'Batas kuota harian Firebase gratis masih berlaku. Aplikasi tetap bekerja lancar dalam Mode Lokal mandiri.',
+          'info'
+        );
+      } else {
+        setSyncStatus('offline');
+        showNotification('Koneksi Offline', 'Tidak dapat menghubungi server Firebase. Mode lokal tetap aktif.', 'info');
+      }
+    }
+  };
+
+  // 1. Initialize Firebase Auth (with anonymous fallback for transparent cloud sync)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
         setIsAuthReady(true);
-        setSyncStatus('synced');
+        if (!isQuotaExhausted) setSyncStatus('synced');
       } else {
-        // Active in local mode; user can log in via AuthModal to sync to cloud
-        setCurrentUser(null);
-        setIsAuthReady(true);
-        setSyncStatus('synced');
+        signInAnonymously(auth)
+          .then((cred) => {
+            setCurrentUser(cred.user);
+            setIsAuthReady(true);
+            if (!isQuotaExhausted) setSyncStatus('synced');
+          })
+          .catch((err) => {
+            console.warn('Anonymous auth notice:', err);
+            setCurrentUser(null);
+            setIsAuthReady(true);
+            if (!isQuotaExhausted) setSyncStatus('synced');
+          });
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isQuotaExhausted]);
 
-  // 2. Real-time Listener for User Profile & Settings from Firestore
+  // 2. Real-time Listener for Shared Staff List ("Data Pegawai") from Firestore
+  useEffect(() => {
+    const masterDataRef = doc(db, 'settings', 'school_master_data');
+    const unsubMasterData = onSnapshot(
+      masterDataRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (Array.isArray(data.staffList)) {
+            const isLegacyDummy = data.staffList.length === 7 && data.staffList.some((p: any) => p.nip === '198506152010011025');
+            if (!isLegacyDummy) {
+              setStaffList(data.staffList);
+              localStorage.setItem('sijunawan_staff_list', JSON.stringify(data.staffList));
+            } else {
+              setStaffList([]);
+              localStorage.setItem('sijunawan_staff_list', JSON.stringify([]));
+            }
+          }
+        }
+      },
+      (err: any) => {
+        if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+          markQuotaExhausted();
+        }
+        console.warn('Firestore Data Pegawai sync notice (using local storage):', err?.message || err);
+      }
+    );
+
+    return () => unsubMasterData();
+  }, [markQuotaExhausted]);
+
+  // 3. Real-time Listener for User Profile & Settings from Firestore
   useEffect(() => {
     if (!currentUser) return;
 
@@ -205,142 +321,166 @@ export default function App() {
           }
         }
       },
-      (err) => {
-        console.warn('Firestore profile sync offline:', err);
+      (err: any) => {
+        if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+          markQuotaExhausted();
+        }
+        console.warn('Firestore profile sync notice:', err?.message || err);
       }
     );
 
     return () => unsubUser();
-  }, [currentUser]);
+  }, [currentUser, markQuotaExhausted]);
 
-  // 3. Real-time Listener for all user's journals (for Monthly Recap)
+  // 4. Real-time Listener for ALL Teachers' Journals (for full Monthly Recap Matrix to read all teachers)
   useEffect(() => {
-    if (!currentUser) return;
-
     const journalsRef = collection(db, 'journals');
-    const q = query(journalsRef, where('userId', '==', currentUser.uid));
-
     const unsubJournals = onSnapshot(
-      q,
+      journalsRef,
       (snapshot) => {
         const loaded: JournalDay[] = [];
         snapshot.forEach((docItem) => {
           loaded.push({ id: docItem.id, ...(docItem.data() as any) });
         });
         setAllJournals(loaded);
+        localStorage.setItem('sijunawan_local_journals', JSON.stringify(loaded));
       },
-      (err) => {
-        console.warn('Firestore journals sync warning:', err);
+      (err: any) => {
+        if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+          markQuotaExhausted();
+        }
+        console.warn('Firestore all journals sync notice (using local cache):', err?.message || err);
       }
     );
 
     return () => unsubJournals();
-  }, [currentUser]);
+  }, [markQuotaExhausted]);
 
-  // 4. Load or Listen to the Selected Date Journal
+  // 5. Load or Listen to the Selected Date Journal for the Currently Active Teacher
   useEffect(() => {
-    if (!currentUser || !selectedDate) return;
+    if (!selectedDate) return;
 
-    // Check if we have this date in loaded journals first
-    const existing = allJournals.find((j) => j.dateStr === selectedDate);
+    const teacherSlug = getTeacherSlug(profile.nip, profile.name);
+    const docId = `journal_${selectedDate}_${teacherSlug}`;
+
+    const tNip = (profile.nip || '').trim().replace(/[^0-9]/g, '');
+    const tName = (profile.name || '').trim().toLowerCase();
+
+    // Check if we have this date in loaded journals for THIS teacher
+    const existing = allJournals.find((j) => {
+      if (j.dateStr !== selectedDate) return false;
+      const jNip = (j.teacherNip || j.profileSnapshot?.nip || '').trim().replace(/[^0-9]/g, '');
+      if (tNip && jNip && tNip === jNip) return true;
+      const jName = (j.teacherName || j.profileSnapshot?.name || '').trim().toLowerCase();
+      if (tName && jName && (tName === jName || jName.includes(tName) || tName.includes(jName))) return true;
+      if (!jNip && !jName && selectedDate === '2026-08-28') return true;
+      return false;
+    });
+
     if (existing) {
       setActivities(existing.activities || []);
       if (existing.shift) setCurrentShift(existing.shift);
+      isCurrentPdfSavedRef.current = Boolean(existing.isPdfSaved);
+      currentPdfSavedAtRef.current = existing.pdfSavedAt ?? null;
+      lastCloudSavedPayloadRef.current = JSON.stringify({
+        selectedDate,
+        teacherSlug,
+        currentShift: existing.shift || currentShift,
+        activities: existing.activities || [],
+        wasPdfSaved: Boolean(existing.isPdfSaved),
+      });
       return;
     }
 
-    // Direct fetch from Firestore for this specific date doc
-    const docId = `${currentUser.uid}_${selectedDate}`;
+    // Direct fetch from Firestore for this specific date and teacher
     const journalDocRef = doc(db, 'journals', docId);
 
-    getDoc(journalDocRef).then((snap) => {
-      if (snap.exists()) {
-        const data = snap.data() as JournalDay;
-        setActivities(data.activities || []);
-        if (data.shift) setCurrentShift(data.shift);
-      } else {
-        // If it's the initial reference date 2026-08-28, keep initial activities; otherwise start clean with 1 row
-        if (selectedDate === '2026-08-28') {
-          setActivities(INITIAL_ACTIVITIES);
+    getDoc(journalDocRef)
+      .then((snap) => {
+        if (snap.exists()) {
+          const data = snap.data() as JournalDay;
+          setActivities(data.activities || []);
+          if (data.shift) setCurrentShift(data.shift);
+          isCurrentPdfSavedRef.current = Boolean(data.isPdfSaved);
+          currentPdfSavedAtRef.current = data.pdfSavedAt ?? null;
+          lastCloudSavedPayloadRef.current = JSON.stringify({
+            selectedDate,
+            teacherSlug,
+            currentShift: data.shift || currentShift,
+            activities: data.activities || [],
+            wasPdfSaved: Boolean(data.isPdfSaved),
+          });
         } else {
-          setActivities([
-            {
-              id: 'act_' + Date.now(),
-              startHour: '07',
-              startMinute: '00',
-              endHour: '08',
-              endMinute: '00',
-              activity: '',
-              notes: '',
-              photoUrl: '',
-            },
-          ]);
+          isCurrentPdfSavedRef.current = false;
+          currentPdfSavedAtRef.current = null;
+          // If reference date and default profile, keep initial demo activities; otherwise fresh row
+          if (selectedDate === '2026-08-28' && (!profile.name || profile.name.includes('SAMSUDIN'))) {
+            setActivities(INITIAL_ACTIVITIES);
+          } else {
+            setActivities([
+              {
+                id: 'act_' + Date.now(),
+                startHour: '07',
+                startMinute: '00',
+                endHour: '08',
+                endMinute: '00',
+                activity: '',
+                notes: '',
+                photoUrl: '',
+              },
+            ]);
+          }
         }
-      }
-    }).catch((err) => {
-      console.warn('Could not load specific date journal:', err);
-    });
-  }, [selectedDate, currentUser]);
+      })
+      .catch((err) => {
+        console.warn('Could not load specific date journal:', err);
+      });
+  }, [selectedDate, profile.name, profile.nip]);
 
-  // 5. Debounced Real-time Save of Current Day's Journal to Firestore & Local Storage
-  const saveCurrentJournalToCloud = useCallback(async () => {
+  // 6. Debounced Real-time Save of Current Day's Journal to Firestore & Local Storage
+  const saveCurrentJournalToCloud = useCallback(async (isManualTrigger: boolean = false) => {
     if (!selectedDate) return;
 
-    setSyncStatus('syncing');
-    const teacherSlug = (profile.nip || profile.name || 'guru').trim().replace(/[^a-zA-Z0-9]/g, '_');
-    const docId = currentUser ? `${currentUser.uid}_${selectedDate}_${teacherSlug}` : `local_${selectedDate}_${teacherSlug}`;
+    const teacherSlug = getTeacherSlug(profile.nip, profile.name);
+    const docId = `journal_${selectedDate}_${teacherSlug}`;
 
-    const validActivities = activities.filter(
-      (a) => a.activity && a.activity.trim() !== '' && a.activity.trim() !== '-'
-    );
-
-    // Look up if this journal already has isPdfSaved set to true
-    let wasPdfSaved = false;
-    let existingPdfSavedAt: number | undefined = undefined;
-    const existing = allJournals.find(
-      (j) =>
-        j.dateStr === selectedDate &&
-        ((j.teacherNip && profile.nip && j.teacherNip === profile.nip) ||
-          (j.teacherName && profile.name && j.teacherName === profile.name) ||
-          (!j.teacherNip && !j.teacherName))
-    );
-
-    if (existing && validActivities.length > 0) {
-      wasPdfSaved = Boolean(existing.isPdfSaved);
-      existingPdfSavedAt = existing.pdfSavedAt;
-    }
+    const wasPdfSaved = isCurrentPdfSavedRef.current;
+    const existingPdfSavedAt = currentPdfSavedAtRef.current;
 
     const payload: JournalDay = {
-      userId: currentUser ? currentUser.uid : 'local_user',
+      userId: currentUser ? currentUser.uid : 'shared_user',
       dateStr: selectedDate,
       formattedDate: parseDateStrToIndonesian(selectedDate),
       shift: currentShift,
       activities: activities,
-      teacherName: profile.name,
-      teacherNip: profile.nip,
+      teacherName: profile.name || '',
+      teacherNip: profile.nip || '',
       isPdfSaved: wasPdfSaved,
       pdfSavedAt: existingPdfSavedAt,
       profileSnapshot: {
-        name: profile.name,
-        nip: profile.nip,
-        position: profile.position,
-        unitWork: profile.unitWork,
-        rankGrade: profile.rankGrade,
-        employeeStatus: profile.employeeStatus,
+        name: profile.name || '',
+        nip: profile.nip || '',
+        position: profile.position || '',
+        unitWork: profile.unitWork || '',
+        rankGrade: profile.rankGrade || '',
+        employeeStatus: profile.employeeStatus || '',
       },
       updatedAt: Date.now(),
     };
 
-    // Update local state and localStorage immediately
+    // Update local state and localStorage immediately (Zero latency, crash-proof)
     setAllJournals((prev) => {
       const entry: JournalDay = { id: docId, ...payload };
-      const idx = prev.findIndex(
-        (j) =>
-          j.dateStr === selectedDate &&
-          ((j.teacherNip && profile.nip && j.teacherNip === profile.nip) ||
-            (j.teacherName && profile.name && j.teacherName === profile.name) ||
-            (!j.teacherNip && !j.teacherName))
-      );
+      const rawNip = (profile.nip || '').replace(/[^0-9]/g, '').trim();
+      const rawName = (profile.name || '').trim().toLowerCase();
+      const idx = prev.findIndex((j) => {
+        if (j.dateStr !== selectedDate) return false;
+        const jNip = (j.teacherNip || j.profileSnapshot?.nip || '').replace(/[^0-9]/g, '').trim();
+        if (rawNip && jNip && rawNip === jNip) return true;
+        const jName = (j.teacherName || j.profileSnapshot?.name || '').trim().toLowerCase();
+        if (rawName && jName && (rawName.includes(jName) || jName.includes(rawName))) return true;
+        return j.id === docId;
+      });
       let updated: JournalDay[];
       if (idx >= 0) {
         updated = [...prev];
@@ -352,26 +492,63 @@ export default function App() {
       return updated;
     });
 
-    if (currentUser) {
-      try {
-        const journalDocRef = doc(db, 'journals', docId);
-        await setDoc(journalDocRef, payload, { merge: true });
+    // Check if cloud write is needed (dirty check)
+    const payloadSignature = JSON.stringify({
+      selectedDate,
+      teacherSlug,
+      currentShift,
+      activities,
+      wasPdfSaved,
+    });
 
-        // Also keep legacy single doc updated for compatibility
-        const legacyDocRef = doc(db, 'journals', `${currentUser.uid}_${selectedDate}`);
-        await setDoc(legacyDocRef, payload, { merge: true });
+    if (payloadSignature === lastCloudSavedPayloadRef.current && !isManualTrigger) {
+      return;
+    }
 
-        setSyncStatus('synced');
-      } catch (err) {
-        console.error('Error syncing journal to Firebase:', err);
+    // If quota was already exhausted, stay in local mode and avoid spamming Firestore
+    if (isQuotaExhausted) {
+      setSyncStatus('quota-exhausted');
+      if (isManualTrigger) {
+        showNotification(
+          'Jurnal Tersimpan di Perangkat',
+          'Data tersimpan aman di browser Anda. (Mode Penyimpanan Lokal Aktif)',
+          'success'
+        );
+      }
+      return;
+    }
+
+    setSyncStatus('syncing');
+    try {
+      const journalDocRef = doc(db, 'journals', docId);
+      const cleanPayload = cleanForFirestore(payload);
+      await setDoc(journalDocRef, cleanPayload, { merge: true });
+      lastCloudSavedPayloadRef.current = payloadSignature;
+      setSyncStatus('synced');
+      if (isManualTrigger) {
+        showNotification('Jurnal Disimpan', 'Jurnal hari ini berhasil disimpan dan tersinkronisasi.', 'success');
+      }
+    } catch (err: any) {
+      if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+        markQuotaExhausted();
+        if (isManualTrigger) {
+          showNotification(
+            'Jurnal Tersimpan (Lokal)',
+            'Jurnal tersimpan aman di browser Anda. (Kuota cloud harian tercapai)',
+            'info'
+          );
+        }
+      } else {
+        console.warn('Sync status notice (offline/fallback):', err?.message || err);
         setSyncStatus('offline');
       }
-    } else {
-      setSyncStatus('synced');
     }
-  }, [currentUser, selectedDate, currentShift, activities, profile.name, profile.nip, allJournals]);
+  }, [currentUser, selectedDate, currentShift, activities, profile.name, profile.nip, isQuotaExhausted, markQuotaExhausted]);
 
-  // Trigger auto-save debounce on activity or shift change
+  const saveCurrentJournalRef = useRef(saveCurrentJournalToCloud);
+  saveCurrentJournalRef.current = saveCurrentJournalToCloud;
+
+  // Trigger auto-save debounce on activity or shift change (2.5 seconds debounce)
   useEffect(() => {
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
@@ -382,48 +559,63 @@ export default function App() {
       clearTimeout(autoSaveTimerRef.current);
     }
 
-    setSyncStatus('syncing');
     autoSaveTimerRef.current = setTimeout(() => {
-      saveCurrentJournalToCloud();
-    }, 900);
+      saveCurrentJournalRef.current(false);
+    }, 2500);
 
     return () => {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [activities, currentShift, selectedDate, saveCurrentJournalToCloud]);
+  }, [activities, currentShift, selectedDate]);
 
   // Save Settings (Profile & Kop Surat & Master Data Staff) to Cloud
   const handleSaveSettingsToCloud = async () => {
     setIsSavingSettings(true);
-    try {
-      if (currentUser) {
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await setDoc(userDocRef, {
-          profile,
-          schoolSettings,
-          staffList,
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
-      }
+    localStorage.setItem('sijunawan_profile', JSON.stringify(profile));
+    localStorage.setItem('sijunawan_school', JSON.stringify(schoolSettings));
+    localStorage.setItem('sijunawan_staff_list', JSON.stringify(staffList));
 
-      localStorage.setItem('sijunawan_profile', JSON.stringify(profile));
-      localStorage.setItem('sijunawan_school', JSON.stringify(schoolSettings));
-      localStorage.setItem('sijunawan_staff_list', JSON.stringify(staffList));
-      setIsSavingSettings(false);
-      showNotification(
-        'SIMPAN BERHASIL',
-        'Data Profil, Kop Sekolah & Master Data Pegawai berhasil disimpan!',
-        'success'
-      );
-    } catch (err: any) {
-      console.error('Error saving settings:', err);
-      localStorage.setItem('sijunawan_profile', JSON.stringify(profile));
-      localStorage.setItem('sijunawan_school', JSON.stringify(schoolSettings));
-      localStorage.setItem('sijunawan_staff_list', JSON.stringify(staffList));
+    if (isQuotaExhausted) {
       setIsSavingSettings(false);
       showNotification(
         'SIMPAN BERHASIL (LOKAL)',
-        'Data Pengaturan berhasil disimpan di perangkat Anda!',
+        'Data Profil, Kop Sekolah & Data Pegawai tersimpan aman di browser Anda.',
+        'success'
+      );
+      return;
+    }
+
+    try {
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await setDoc(userDocRef, cleanForFirestore({
+          profile,
+          schoolSettings,
+          staffList: staffList || [],
+          updatedAt: serverTimestamp(),
+        }), { merge: true });
+
+        // Also sync shared Data Pegawai to global settings doc
+        await setDoc(doc(db, 'settings', 'school_master_data'), cleanForFirestore({
+          staffList: staffList || [],
+          updatedAt: serverTimestamp(),
+        }), { merge: true }).catch(() => {});
+      }
+
+      setIsSavingSettings(false);
+      showNotification(
+        'SIMPAN BERHASIL',
+        'Data Profil, Kop Sekolah & Data Pegawai berhasil disimpan!',
+        'success'
+      );
+    } catch (err: any) {
+      if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+        markQuotaExhausted();
+      }
+      setIsSavingSettings(false);
+      showNotification(
+        'SIMPAN BERHASIL (LOKAL)',
+        'Data Pengaturan berhasil disimpan di perangkat Anda! (Penyimpanan Lokal Aktif)',
         'success'
       );
     }
@@ -432,9 +624,8 @@ export default function App() {
   // Delete a journal entry
   const handleDeleteJournal = async (journalId: string, dateStr: string) => {
     try {
-      if (currentUser) {
-        const docId = journalId || `${currentUser.uid}_${dateStr}`;
-        await deleteDoc(doc(db, 'journals', docId));
+      if (journalId && !isQuotaExhausted) {
+        await deleteDoc(doc(db, 'journals', journalId)).catch(() => {});
       }
       setAllJournals((prev) => {
         const updated = prev.filter((j) => (j.id ? j.id !== journalId : j.dateStr !== dateStr));
@@ -443,10 +634,14 @@ export default function App() {
       });
       if (selectedDate === dateStr) {
         setActivities([]);
+        isCurrentPdfSavedRef.current = false;
       }
       showNotification('Jurnal Dihapus', `Jurnal tanggal ${dateStr} berhasil dihapus.`, 'info');
-    } catch (err) {
-      console.error('Error deleting journal:', err);
+    } catch (err: any) {
+      if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+        markQuotaExhausted();
+      }
+      console.warn('Error deleting journal:', err);
     }
   };
 
@@ -457,39 +652,46 @@ export default function App() {
     );
     if (validActivities.length === 0) return;
 
-    const teacherSlug = (profile.nip || profile.name || 'guru').trim().replace(/[^a-zA-Z0-9]/g, '_');
-    const docId = currentUser ? `${currentUser.uid}_${selectedDate}_${teacherSlug}` : `local_${selectedDate}_${teacherSlug}`;
+    isCurrentPdfSavedRef.current = true;
+    const teacherSlug = getTeacherSlug(profile.nip, profile.name);
+    const docId = `journal_${selectedDate}_${teacherSlug}`;
 
     const updatedJournalPayload: JournalDay = {
-      userId: currentUser ? currentUser.uid : 'local_user',
+      userId: currentUser ? currentUser.uid : 'shared_user',
       dateStr: selectedDate,
       formattedDate: parseDateStrToIndonesian(selectedDate),
       shift: currentShift,
       activities: activities,
-      teacherName: profile.name,
-      teacherNip: profile.nip,
+      teacherName: profile.name || '',
+      teacherNip: profile.nip || '',
       isPdfSaved: true,
       pdfSavedAt: Date.now(),
       profileSnapshot: {
-        name: profile.name,
-        nip: profile.nip,
-        position: profile.position,
-        unitWork: profile.unitWork,
-        rankGrade: profile.rankGrade,
-        employeeStatus: profile.employeeStatus,
+        name: profile.name || '',
+        nip: profile.nip || '',
+        position: profile.position || '',
+        unitWork: profile.unitWork || '',
+        rankGrade: profile.rankGrade || '',
+        employeeStatus: profile.employeeStatus || '',
+        schoolHeadName: profile.schoolHeadName || '',
+        schoolHeadNip: profile.schoolHeadNip || '',
+        cityLocation: profile.cityLocation || '',
       },
       updatedAt: Date.now(),
     };
 
     setAllJournals((prev) => {
       const entry: JournalDay = { id: docId, ...updatedJournalPayload };
-      const idx = prev.findIndex(
-        (j) =>
-          j.dateStr === selectedDate &&
-          ((j.teacherNip && profile.nip && j.teacherNip === profile.nip) ||
-            (j.teacherName && profile.name && j.teacherName === profile.name) ||
-            (!j.teacherNip && !j.teacherName))
-      );
+      const rawNip = (profile.nip || '').replace(/[^0-9]/g, '').trim();
+      const rawName = (profile.name || '').trim().toLowerCase();
+      const idx = prev.findIndex((j) => {
+        if (j.dateStr !== selectedDate) return false;
+        const jNip = (j.teacherNip || j.profileSnapshot?.nip || '').replace(/[^0-9]/g, '').trim();
+        if (rawNip && jNip && rawNip === jNip) return true;
+        const jName = (j.teacherName || j.profileSnapshot?.name || '').trim().toLowerCase();
+        if (rawName && jName && (rawName.includes(jName) || jName.includes(rawName))) return true;
+        return j.id === docId;
+      });
       let updated: JournalDay[];
       if (idx >= 0) {
         updated = [...prev];
@@ -501,14 +703,55 @@ export default function App() {
       return updated;
     });
 
-    if (currentUser) {
+    if (!isQuotaExhausted) {
       try {
         const journalDocRef = doc(db, 'journals', docId);
-        await setDoc(journalDocRef, updatedJournalPayload, { merge: true });
-        const legacyDocRef = doc(db, 'journals', `${currentUser.uid}_${selectedDate}`);
-        await setDoc(legacyDocRef, updatedJournalPayload, { merge: true });
-      } catch (err) {
-        console.warn('Firestore sync error:', err);
+        const cleanPayload = cleanForFirestore(updatedJournalPayload);
+        await setDoc(journalDocRef, cleanPayload, { merge: true });
+
+        // Auto-register teacher into shared school master data staff list on Firestore
+        if (profile.name && profile.name.trim() !== '') {
+          const masterDocRef = doc(db, 'settings', 'school_master_data');
+          getDoc(masterDocRef)
+            .then((snap) => {
+              let currentList: Partial<UserProfile>[] = [];
+              if (snap.exists()) {
+                const data = snap.data();
+                if (Array.isArray(data.staffList)) {
+                  currentList = data.staffList;
+                }
+              }
+              const tNipClean = (profile.nip || '').replace(/[^0-9]/g, '');
+              const tNameClean = (profile.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+              const exists = currentList.some((st) => {
+                const sNipClean = (st.nip || '').replace(/[^0-9]/g, '');
+                if (tNipClean.length >= 6 && sNipClean.length >= 6 && tNipClean === sNipClean) return true;
+                const sNameClean = (st.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return tNameClean === sNameClean;
+              });
+              if (!exists) {
+                const newStaffMember: Partial<UserProfile> = {
+                  name: profile.name,
+                  nip: profile.nip || '-',
+                  position: profile.position || 'Guru / Tenaga Kependidikan',
+                  unitWork: profile.unitWork || schoolSettings.subUnitName || 'SDN Babelan Kota 01',
+                  rankGrade: profile.rankGrade || '-',
+                  employeeStatus: profile.employeeStatus || (profile.nip && profile.nip !== '-' ? 'PNS' : 'Non-PNS / Tendik'),
+                  schoolHeadName: profile.schoolHeadName || schoolSettings.headmasterName || '',
+                  schoolHeadNip: profile.schoolHeadNip || schoolSettings.headmasterNip || '',
+                  cityLocation: profile.cityLocation || schoolSettings.cityLocation || 'Bekasi',
+                };
+                const updatedStaffList = [...currentList, newStaffMember];
+                setDoc(masterDocRef, cleanForFirestore({ staffList: updatedStaffList, updatedAt: serverTimestamp() }), { merge: true }).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        }
+      } catch (err: any) {
+        if (err?.code === 'resource-exhausted' || err?.message?.includes('Quota limit exceeded')) {
+          markQuotaExhausted();
+        }
+        console.warn('Firestore sync note:', err?.message || err);
       }
     }
   };
@@ -547,19 +790,69 @@ export default function App() {
     setIsSavePdfModalOpen(true);
   };
 
-  // Handle Quick Template Insertion
-  const handleApplyTemplate = (activityText: string, notesText: string) => {
+  // Handle Quick Template Insertion (Support modifying row or adding manual row)
+  const handleApplyTemplate = (
+    activityText: string, 
+    notesText: string, 
+    indicatorText?: string,
+    timeData?: { startHour?: string; startMinute?: string; endHour?: string; endMinute?: string },
+    asNewRow?: boolean
+  ) => {
     setActivities((prev) => {
+      if (asNewRow || targetTemplateIndex < 0 || targetTemplateIndex >= prev.length) {
+        const newAct: ActivityItem = {
+          id: `act_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          startHour: timeData?.startHour || '07',
+          startMinute: timeData?.startMinute || '00',
+          endHour: timeData?.endHour || '08',
+          endMinute: timeData?.endMinute || '00',
+          activity: activityText,
+          indicator: indicatorText || '',
+          notes: notesText || '',
+          photoUrl: '',
+        };
+        return [...prev, newAct];
+      }
+
       const updated = [...prev];
       if (updated[targetTemplateIndex]) {
         updated[targetTemplateIndex] = {
           ...updated[targetTemplateIndex],
           activity: activityText,
-          notes: notesText || updated[targetTemplateIndex].notes,
+          indicator: indicatorText !== undefined ? indicatorText : updated[targetTemplateIndex].indicator,
+          notes: notesText !== undefined ? notesText : updated[targetTemplateIndex].notes,
+          startHour: timeData?.startHour || updated[targetTemplateIndex].startHour,
+          startMinute: timeData?.startMinute || updated[targetTemplateIndex].startMinute,
+          endHour: timeData?.endHour || updated[targetTemplateIndex].endHour,
+          endMinute: timeData?.endMinute || updated[targetTemplateIndex].endMinute,
         };
       }
       return updated;
     });
+
+    showNotification(
+      'Template Diterapkan',
+      'Kegiatan berhasil dimasukkan ke dalam jurnal harian.',
+      'success'
+    );
+  };
+
+  // Handle Full Day 6-activity Package (Guru & Tendik)
+  const handleApplyFullDayPackage = (pkgActivities: ActivityItem[], shiftTitle?: string) => {
+    const timestamp = Date.now();
+    const cloned = pkgActivities.map((act, i) => ({
+      ...act,
+      id: `act_${timestamp}_${i}`,
+    }));
+    setActivities(cloned);
+    if (shiftTitle) {
+      setCurrentShift(shiftTitle);
+    }
+    showNotification(
+      'Paket 6 Kegiatan Diterapkan',
+      `Berhasil menerapkan 6 sesi kegiatan lengkap dengan jam teratur dan indikator kinerja ke jurnal hari ini.`,
+      'success'
+    );
   };
 
   const handleOpenTemplateModal = (index: number) => {
@@ -609,6 +902,12 @@ export default function App() {
                 activities={activities}
                 setActivities={setActivities}
                 onOpenTemplateModal={handleOpenTemplateModal}
+                profile={profile}
+                staffList={staffList}
+                onSelectStaff={handleSelectStaff}
+                onApplyFullDayPackage={handleApplyFullDayPackage}
+                onExportPdf={handleExportPdf}
+                isExporting={isExportingPdf}
               />
             </div>
 
@@ -741,6 +1040,7 @@ export default function App() {
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
         onSelectTemplate={handleApplyTemplate}
+        onApplyFullDayActivities={handleApplyFullDayPackage}
       />
 
       <AuthModal

@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile and school configuration",
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": "object",
+          "description": "Teacher or staff personal details"
+        },
+        "schoolSettings": {
+          "type": "object",
+          "description": "School letterhead and identity details"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Last updated timestamp"
+        }
+      }
+    },
+    "JournalDay": {
+      "title": "JournalDay",
+      "description": "Daily work journal record of a teacher or staff member",
+      "type": "object",
+      "properties": {
+        "dateStr": {
+          "type": "string",
+          "description": "Date of the journal in YYYY-MM-DD"
+        },
+        "teacherName": {
+          "type": "string",
+          "description": "Name of the teacher or staff member"
+        },
+        "teacherNip": {
+          "type": "string",
+          "description": "NIP of the teacher"
+        },
+        "shift": {
+          "type": "string",
+          "description": "Assigned work shift"
+        },
+        "activities": {
+          "type": "array",
+          "description": "List of daily work activities"
+        },
+        "isPdfSaved": {
+          "type": "boolean",
+          "description": "Flag indicating if journal was finalized to PDF"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Last updated timestamp"
+        }
+      },
+      "required": [
+        "dateStr"
+      ]
+    },
+    "SchoolMasterData": {
+      "title": "SchoolMasterData",
+      "description": "School master data and shared staff list",
+      "type": "object",
+      "properties": {
+        "staffList": {
+          "type": "array",
+          "description": "List of school teachers and administrative staff"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Last updated timestamp"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user preferences and personal profile"
+    },
+    "/journals/{journalId}": {
+      "schema": "JournalDay",
+      "description": "Daily activity journal documents"
+    },
+    "/settings/{docId}": {
+      "schema": "SchoolMasterData",
+      "description": "Shared school configuration and master employee lists"
+    }
+  }
+}

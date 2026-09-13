@@ -10,7 +10,8 @@ import {
   where, 
   onSnapshot, 
   deleteDoc,
-  serverTimestamp 
+  serverTimestamp,
+  getDocFromServer 
 } from 'firebase/firestore';
 import { 
   getAuth, 
@@ -57,6 +58,7 @@ export {
   onSnapshot,
   deleteDoc,
   serverTimestamp,
+  getDocFromServer,
   signInAnonymously,
   onAuthStateChanged,
   signInWithEmailAndPassword,
