@@ -72,7 +72,7 @@ export const SIX_ACTIVITIES_GURU: ActivityItem[] = [
     startMinute: '30',
     endHour: '07',
     endMinute: '15',
-    activity: 'Penyambutan siswa (5S), apel pagi, dan doa bersama',
+    activity: 'Kegiatan Pagi Ceria dan Gerakan 7 Kebiasaan Anak Indonesia Hebat',
     notes: 'Buku piket, presensi pagi',
     photoUrl: '',
   },
@@ -202,7 +202,7 @@ export const FULL_DAY_PACKAGES: FullDayTemplatePackage[] = [
     title: 'Paket Standar 6 Kegiatan Harian Guru',
     role: 'Guru',
     shift: 'Guru : Shift Pagi (06.30 - 15.00)',
-    description: 'Format ringkas 6 kegiatan kerja harian guru (Penyambutan, KBM, Bimbingan, Asesmen, Administrasi Ajar & Kombel).',
+    description: 'Format ringkas 6 kegiatan kerja harian guru (Pagi Ceria & 7 Kebiasaan, KBM, Bimbingan, Asesmen, Administrasi Ajar & Kombel).',
     activities: SIX_ACTIVITIES_GURU,
   },
   {
@@ -223,7 +223,7 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     role: 'Guru',
     items: [
       {
-        text: 'Penyambutan peserta didik (5S), apel pagi, dan doa bersama',
+        text: 'Kegiatan Pagi Ceria dan Gerakan 7 Kebiasaan Anak Indonesia Hebat',
         notes: 'Buku piket & presensi pagi',
         role: 'Guru',
       },
@@ -508,4 +508,25 @@ export const QUICK_ACTIVITY_TEMPLATES: ActivityTemplateCategory[] = [
     ],
   },
 ];
+
+export function normalizeActivityText(text: string): string {
+  if (!text) return text;
+  if (
+    text.includes('Penyambutan siswa (5S), apel pagi, dan doa bersama') ||
+    text.includes('Penyambutan peserta didik (5S), apel pagi, dan doa bersama') ||
+    text.includes('Penyambutan siswa (5S)') ||
+    text.includes('Penyambutan peserta didik (5S)')
+  ) {
+    return 'Kegiatan Pagi Ceria dan Gerakan 7 Kebiasaan Anak Indonesia Hebat';
+  }
+  return text;
+}
+
+export function normalizeActivities(items: ActivityItem[]): ActivityItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((act) => ({
+    ...act,
+    activity: normalizeActivityText(act.activity),
+  }));
+}
 

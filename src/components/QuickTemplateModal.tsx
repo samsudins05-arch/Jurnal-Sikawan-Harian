@@ -221,7 +221,7 @@ export const QuickTemplateModal: React.FC<QuickTemplateModalProps> = ({
                     Paket 6 Kegiatan Harian Guru
                   </h4>
                   <p className="text-[11px] text-slate-600">
-                    Format ringkas 6 sesi kerja guru mencakup penyambutan 5S, KBM modul ajar, bimbingan literasi/remedial, asesmen formatif, penyusunan perangkat ajar, dan refleksi Kombel.
+                    Format ringkas 6 sesi kerja guru mencakup Kegiatan Pagi Ceria &amp; Gerakan 7 Kebiasaan, KBM modul ajar, bimbingan literasi/remedial, asesmen formatif, penyusunan perangkat ajar, dan refleksi Kombel.
                   </p>
 
                   {/* List mini ringkasan 6 kegiatan */}

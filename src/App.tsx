@@ -36,7 +36,8 @@ import {
   DEFAULT_SCHOOL_SETTINGS, 
   DEFAULT_SHIFTS, 
   INITIAL_ACTIVITIES,
-  DEFAULT_STAFF_LIST
+  DEFAULT_STAFF_LIST,
+  normalizeActivities
 } from './data/initialData';
 import { parseDateStrToIndonesian } from './utils/dateFormat';
 import { exportElementToPdf } from './utils/pdfExport';
@@ -163,7 +164,12 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.map((j: any) => ({
+            ...j,
+            activities: normalizeActivities(j.activities || []),
+          }));
+        }
       } catch (e) {}
     }
     return [];
@@ -378,7 +384,7 @@ export default function App() {
     });
 
     if (existing) {
-      setActivities(existing.activities || []);
+      setActivities(normalizeActivities(existing.activities || []));
       if (existing.shift) setCurrentShift(existing.shift);
       isCurrentPdfSavedRef.current = Boolean(existing.isPdfSaved);
       currentPdfSavedAtRef.current = existing.pdfSavedAt ?? null;
@@ -386,7 +392,7 @@ export default function App() {
         selectedDate,
         teacherSlug,
         currentShift: existing.shift || currentShift,
-        activities: existing.activities || [],
+        activities: normalizeActivities(existing.activities || []),
         wasPdfSaved: Boolean(existing.isPdfSaved),
       });
       return;
@@ -399,7 +405,7 @@ export default function App() {
       .then((snap) => {
         if (snap.exists()) {
           const data = snap.data() as JournalDay;
-          setActivities(data.activities || []);
+          setActivities(normalizeActivities(data.activities || []));
           if (data.shift) setCurrentShift(data.shift);
           isCurrentPdfSavedRef.current = Boolean(data.isPdfSaved);
           currentPdfSavedAtRef.current = data.pdfSavedAt ?? null;
@@ -407,7 +413,7 @@ export default function App() {
             selectedDate,
             teacherSlug,
             currentShift: data.shift || currentShift,
-            activities: data.activities || [],
+            activities: normalizeActivities(data.activities || []),
             wasPdfSaved: Boolean(data.isPdfSaved),
           });
         } else {
@@ -415,7 +421,7 @@ export default function App() {
           currentPdfSavedAtRef.current = null;
           // If reference date and default profile, keep initial demo activities; otherwise fresh row
           if (selectedDate === '2026-08-28' && (!profile.name || profile.name.includes('SAMSUDIN'))) {
-            setActivities(INITIAL_ACTIVITIES);
+            setActivities(normalizeActivities(INITIAL_ACTIVITIES));
           } else {
             setActivities([
               {
